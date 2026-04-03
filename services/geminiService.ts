@@ -27,13 +27,29 @@ const fileToGenerativePart = async (file: File): Promise<{ inlineData: { data: s
   });
 };
 
-export const getClient = () => {
-  const apiKey = process.env.GEMINI_API_KEY || process.env.API_KEY;
-  if (!apiKey) {
-    throw new Error("AI Protocol Offline: GEMINI_API_KEY missing. If you are using the published version, please go to 'Settings' (⚙️) and configure your Gemini API Key.");
+let _clientPromise: Promise<GoogleGenAI> | null = null;
+
+const _initClient = async (): Promise<GoogleGenAI> => {
+  const response = await fetch("/api/config");
+  if (!response.ok) {
+    _clientPromise = null;
+    const body = await response.json().catch(() => ({}));
+    throw new Error(body.error || "AI Protocol Offline: Could not retrieve API configuration from server.");
   }
-  return new GoogleGenAI({ apiKey });
-}
+  const { geminiApiKey } = await response.json();
+  if (!geminiApiKey) {
+    _clientPromise = null;
+    throw new Error("AI Protocol Offline: GEMINI_API_KEY missing. Please set it in your Railway environment variables.");
+  }
+  return new GoogleGenAI({ apiKey: geminiApiKey });
+};
+
+export const getClient = (): Promise<GoogleGenAI> => {
+  if (!_clientPromise) {
+    _clientPromise = _initClient();
+  }
+  return _clientPromise;
+};
 
 /**
  * Exponential Backoff Retry Logic
@@ -74,12 +90,12 @@ export const callGeminiWithRetry = async (fn: () => Promise<any>, retries = 3, b
 };
 
 export const analyzeChartImage = async (imageFile: File, language: Language = 'zh'): Promise<AnalysisResponse> => {
-  const ai = getClient();
   const langInstruction = language === 'en' ? "OUTPUT MUST BE IN ENGLISH." : "OUTPUT MUST BE IN TRADITIONAL CHINESE (繁體中文).";
   const systemInstruction = `${TRADER_PERSONA_PROMPT}\n\nIMPORTANT OVERRIDE: ${langInstruction}`;
 
   try {
     const imagePart = await fileToGenerativePart(imageFile);
+    const ai = await getClient();
     const response = await callGeminiWithRetry(() => ai.models.generateContent({
       model: "gemini-3-flash-preview", 
       contents: {
@@ -107,12 +123,11 @@ export const analyzeChartImage = async (imageFile: File, language: Language = 'z
 };
 
 export const analyzeStockByData = async (
-  symbol: string, 
-  csvData: string, 
+  symbol: string,
+  csvData: string,
   language: Language = 'zh',
   timeframe: string = '1d'
 ): Promise<AnalysisResponse> => {
-  const ai = getClient();
   const langInstruction = language === 'en' ? "OUTPUT MUST BE IN ENGLISH." : "OUTPUT MUST BE IN TRADITIONAL CHINESE (繁體中文).";
 
   try {
@@ -130,6 +145,7 @@ export const analyzeStockByData = async (
       ${csvData}
     `;
 
+    const ai = await getClient();
     const response = await callGeminiWithRetry(() => ai.models.generateContent({
       model: "gemini-3-flash-preview",
       contents: { parts: [{ text: prompt }] },

@@ -8,7 +8,7 @@ export const generateNewsSummary = async (
   timeframe: string,
   language: Language = 'zh'
 ): Promise<NewsSummary> => {
-  const ai = getClient();
+  const ai = await getClient();
   const today = new Date().toLocaleDateString('zh-TW', { timeZone: 'Asia/Taipei' });
   
   const prompt = `

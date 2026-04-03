@@ -35,6 +35,15 @@ async function startServer() {
     });
   });
 
+  // Runtime config: exposes server-side env vars to the frontend
+  app.get("/api/config", (req, res) => {
+    const geminiApiKey = process.env.GEMINI_API_KEY;
+    if (!geminiApiKey) {
+      return res.status(503).json({ error: "GEMINI_API_KEY is not configured on the server." });
+    }
+    res.json({ geminiApiKey });
+  });
+
   // Proxy endpoint for Yahoo Finance
   app.get("/api/yahoo-proxy", async (req, res) => {
     let { path: yahooPath } = req.query;

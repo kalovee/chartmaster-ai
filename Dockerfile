@@ -8,10 +8,6 @@ RUN npm ci
 
 COPY . .
 
-# GEMINI_API_KEY must be a build arg because vite.config.ts bakes it into the bundle at build time
-ARG GEMINI_API_KEY
-ENV GEMINI_API_KEY=${GEMINI_API_KEY}
-
 RUN npm run build
 
 # Stage 2: Production runtime
