@@ -336,7 +336,7 @@ const NewsSummaryView: React.FC = () => {
             </div>
 
             {/* Critical Timeline - Deep Dark / Cyber */}
-            <div className="md:col-span-6 bg-black rounded-[2rem] border border-gray-800/50 p-8 shadow-2xl relative overflow-hidden group">
+            <div className="md:col-span-6 bg-slate-50 dark:bg-black rounded-[2rem] border border-gray-200/50 dark:border-gray-800/50 p-8 shadow-2xl relative overflow-hidden group">
               <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(59,130,246,0.1),transparent)] group-hover:bg-[radial-gradient(circle_at_50%_0%,rgba(59,130,246,0.15),transparent)] transition-colors duration-1000"></div>
               
               <div className="relative z-10 h-full flex flex-col">
@@ -351,7 +351,7 @@ const NewsSummaryView: React.FC = () => {
                 <div className="prose prose-xs dark:prose-invert max-w-none overflow-y-auto flex-grow max-h-[300px] custom-scrollbar pr-6 news-content-area">
                   <ReactMarkdown components={{ 
                     p: ({node, ...props}) => <p className="m-0 text-[11px] leading-loose text-gray-500 font-mono tracking-normal" {...props} />, 
-                    ul: ({node, ...props}) => <ul className="m-0 p-0 list-none space-y-8 border-l border-gray-800/50 ml-2 pl-8" {...props} />, 
+                    ul: ({node, ...props}) => <ul className="m-0 p-0 list-none space-y-8 border-l border-gray-200 dark:border-gray-800/50 ml-2 pl-8" {...props} />,
                     li: ({node, ...props}) => {
                       const rawText = getRawText(props.children);
                       const timeMatch = rawText.match(/^(\d{2}:\d{2})/);
@@ -360,12 +360,12 @@ const NewsSummaryView: React.FC = () => {
                       
                       return (
                         <li className="relative group/item" {...props}>
-                          <div className="absolute -left-[33px] top-1.5 w-3.5 h-3.5 rounded-full bg-black border border-gray-700 group-hover/item:border-blue-500 transition-all duration-500 flex items-center justify-center">
-                            <div className="w-1.5 h-1.5 rounded-full bg-gray-800 group-hover/item:bg-blue-400 transition-colors"></div>
+                          <div className="absolute -left-[33px] top-1.5 w-3.5 h-3.5 rounded-full bg-white dark:bg-black border border-gray-300 dark:border-gray-700 group-hover/item:border-blue-500 transition-all duration-500 flex items-center justify-center">
+                            <div className="w-1.5 h-1.5 rounded-full bg-gray-300 dark:bg-gray-800 group-hover/item:bg-blue-400 transition-colors"></div>
                           </div>
                           <div className="flex flex-col gap-3">
                             {time && <span className="text-[10px] font-black font-mono text-blue-400/80 tracking-[0.2em]">{time}</span>}
-                            <span className="text-[13px] text-gray-400 group-hover/item:text-gray-100 transition-colors leading-loose font-medium tracking-normal">{content}</span>
+                            <span className="text-[13px] text-gray-600 dark:text-gray-400 group-hover/item:text-gray-900 dark:group-hover/item:text-gray-100 transition-colors leading-loose font-medium tracking-normal">{content}</span>
                           </div>
                         </li>
                       );
@@ -379,7 +379,7 @@ const NewsSummaryView: React.FC = () => {
             </div>
 
             {/* Trending Sectors & Commodities - Dark / Gold */}
-            <div className="md:col-span-6 bg-[#0a0a0a] rounded-[2rem] border border-trading-yellow/20 p-8 shadow-2xl relative overflow-hidden group">
+            <div className="md:col-span-6 bg-slate-50 dark:bg-[#0a0a0a] rounded-[2rem] border border-trading-yellow/20 p-8 shadow-2xl relative overflow-hidden group">
               <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_100%,rgba(255,215,0,0.05),transparent)] group-hover:bg-[radial-gradient(circle_at_50%_100%,rgba(255,215,0,0.1),transparent)] transition-colors duration-1000"></div>
               
               <div className="relative z-10 h-full flex flex-col">
@@ -395,9 +395,9 @@ const NewsSummaryView: React.FC = () => {
                     p: ({node, ...props}) => <p className="m-0 text-[13px] leading-loose text-gray-400 font-medium mb-8 tracking-normal" {...props} />, 
                     ul: ({node, ...props}) => <ul className="m-0 p-0 list-none space-y-6" {...props} />, 
                     li: ({node, ...props}) => (
-                      <li className="flex items-start gap-4 group/item border-b border-gray-800/50 pb-4 last:border-0" {...props}>
+                      <li className="flex items-start gap-4 group/item border-b border-gray-200/50 dark:border-gray-800/50 pb-4 last:border-0" {...props}>
                         <div className="mt-2 w-1.5 h-1.5 rounded-full bg-trading-yellow/40 group-hover/item:bg-trading-yellow shrink-0 transition-colors"></div>
-                        <span className="text-[13px] text-gray-400 group-hover/item:text-gray-100 transition-colors leading-loose tracking-normal">{props.children}</span>
+                        <span className="text-[13px] text-gray-600 dark:text-gray-400 group-hover/item:text-gray-900 dark:group-hover/item:text-gray-100 transition-colors leading-loose tracking-normal">{props.children}</span>
                       </li>
                     )
                   }}>
@@ -471,7 +471,7 @@ const NewsSummaryView: React.FC = () => {
               </div>
 
               {summary.groundingMetadata && (
-                <div className="bg-gray-950 rounded-3xl p-8 border border-gray-800 shadow-2xl">
+                <div className="bg-white dark:bg-gray-950 rounded-3xl p-8 border border-gray-200 dark:border-gray-800 shadow-2xl">
                   <NewsFeed chunks={summary.groundingMetadata.groundingChunks} />
                 </div>
               )}
@@ -501,7 +501,7 @@ const NewsSummaryView: React.FC = () => {
 
               <motion.div 
                 variants={itemVariants}
-                className="bg-gray-950 rounded-3xl border border-gray-800 p-8 shadow-2xl relative overflow-hidden group"
+                className="bg-white dark:bg-gray-950 rounded-3xl border border-gray-200 dark:border-gray-800 p-8 shadow-2xl relative overflow-hidden group"
               >
                 <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/5 rounded-full -mr-16 -mt-16"></div>
                 <h4 className="text-xs font-black text-gray-500 uppercase tracking-[0.3em] mb-8 flex items-center gap-3">
@@ -509,11 +509,11 @@ const NewsSummaryView: React.FC = () => {
                   Intelligence Meta
                 </h4>
                 <div className="space-y-5 relative z-10">
-                  <div className="flex justify-between items-center pb-4 border-b border-gray-800/50">
+                  <div className="flex justify-between items-center pb-4 border-b border-gray-200/50 dark:border-gray-800/50">
                     <span className="text-[11px] text-gray-500 font-black uppercase tracking-wider">AI Engine</span>
                     <span className="text-[11px] font-mono text-trading-yellow font-black">GEMINI_3_FLASH</span>
                   </div>
-                  <div className="flex justify-between items-center pb-4 border-b border-gray-800/50">
+                  <div className="flex justify-between items-center pb-4 border-b border-gray-200/50 dark:border-gray-800/50">
                     <span className="text-[11px] text-gray-500 font-black uppercase tracking-wider">Neural Search</span>
                     <span className="text-[11px] font-mono text-trading-green font-black">ENABLED</span>
                   </div>
