@@ -1,0 +1,1377 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="英語教育系畢業考互動測驗，支援手機、錯題本、搜尋題庫、統計儀表板與離線使用。">
+<meta name="theme-color" content="#2f6f73">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="畢業考測驗">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" href="./icon.svg" type="image/svg+xml">
+<title>英語教育系畢業考互動測驗</title>
+<style>
+:root {
+  --primary: #2f6f73;
+  --primary-dark: #194f54;
+  --primary-soft: #d9eeee;
+  --accent: #b86b2b;
+  --accent-soft: #fff1df;
+  --rose: #b9435c;
+  --success: #16855f;
+  --success-bg: #e5f7ef;
+  --danger: #c63f58;
+  --danger-bg: #fff0f2;
+  --paper: #fffdf8;
+  --card: rgba(255, 255, 255, 0.92);
+  --text: #17212b;
+  --muted: #66717d;
+  --border: #d9e2e5;
+  --shadow: 0 18px 48px rgba(35, 55, 65, 0.12);
+  --shadow-soft: 0 8px 24px rgba(35, 55, 65, 0.09);
+  --radius: 14px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang TC", "Noto Sans TC", sans-serif;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.70), rgba(255,255,255,0.92)),
+    linear-gradient(135deg, #edf6f4 0%, #fff7ea 42%, #f7edf0 100%);
+  background-attachment: fixed;
+  color: var(--text);
+  min-height: 100vh;
+  letter-spacing: 0;
+}
+button,
+.subject-card,
+.option,
+.result-item,
+.wrong-chip {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+body.dark {
+  --primary: #69c3bd;
+  --primary-dark: #c6f3ee;
+  --primary-soft: rgba(105,195,189,0.16);
+  --accent: #f0b36d;
+  --accent-soft: rgba(240,179,109,0.15);
+  --rose: #f08aa0;
+  --success: #65d6a1;
+  --success-bg: rgba(101,214,161,0.16);
+  --danger: #ff8da1;
+  --danger-bg: rgba(255,141,161,0.16);
+  --paper: #111923;
+  --card: rgba(22, 31, 42, 0.92);
+  --text: #f3f7f8;
+  --muted: #aebbc4;
+  --border: #324551;
+  --shadow: 0 18px 48px rgba(0, 0, 0, 0.32);
+  --shadow-soft: 0 8px 24px rgba(0, 0, 0, 0.24);
+  background:
+    linear-gradient(180deg, rgba(16,24,34,0.72), rgba(16,24,34,0.96)),
+    linear-gradient(135deg, #0e2326 0%, #251d17 48%, #24141a 100%);
+}
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.28;
+  background-image:
+    linear-gradient(rgba(47,111,115,0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(47,111,115,0.08) 1px, transparent 1px);
+  background-size: 42px 42px;
+  mask-image: linear-gradient(180deg, #000 0%, transparent 70%);
+}
+#app { width: min(1040px, 100%); margin: 0 auto; padding: 28px 18px 76px; position: relative; }
+
+/* ── Menu ── */
+.menu-header {
+  position: relative;
+  text-align: left;
+  padding: 34px 34px 30px;
+  margin: 10px 0 22px;
+  border: 1px solid rgba(217,226,229,0.9);
+  border-radius: 20px;
+  background:
+    linear-gradient(135deg, rgba(255,255,255,0.96), rgba(255,250,241,0.92)),
+    linear-gradient(90deg, rgba(47,111,115,0.08), rgba(184,107,43,0.08));
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+body.dark .menu-header {
+  background:
+    linear-gradient(135deg, rgba(22,31,42,0.96), rgba(32,28,24,0.92)),
+    linear-gradient(90deg, rgba(105,195,189,0.08), rgba(240,179,109,0.08));
+  border-color: rgba(255,255,255,0.12);
+}
+.menu-header::before {
+  content: "";
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 7px;
+  background: linear-gradient(180deg, var(--primary), var(--accent), var(--rose));
+}
+.menu-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--primary-dark);
+  background: rgba(47,111,115,0.10);
+  border: 1px solid rgba(47,111,115,0.16);
+  border-radius: 999px;
+  padding: 7px 11px;
+  font-size: 0.78rem;
+  font-weight: 800;
+  margin-bottom: 14px;
+}
+.menu-header h1 {
+  max-width: 780px;
+  font-size: clamp(2rem, 5vw, 3.6rem);
+  line-height: 1.05;
+  font-weight: 900;
+  color: #102a36;
+  letter-spacing: 0;
+}
+body.dark .menu-header h1 { color: #f3f7f8; }
+.menu-header p { color: var(--muted); margin-top: 12px; font-size: 1rem; line-height: 1.7; max-width: 720px; }
+.menu-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 20px;
+}
+.top-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 16px;
+}
+.mode-btn {
+  border: 1px solid rgba(217,226,229,0.95);
+  background: rgba(255,255,255,0.82);
+  color: var(--primary-dark);
+  border-radius: 999px;
+  padding: 9px 12px;
+  font-size: 0.82rem;
+  font-weight: 900;
+  cursor: pointer;
+  transition: transform 0.16s ease, background 0.16s ease, border-color 0.16s ease;
+}
+.mode-btn:hover { transform: translateY(-1px); background: #fff; }
+body.dark .mode-btn,
+body.dark .stat-pill,
+body.dark .menu-kicker { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.13); }
+.stat-pill {
+  border: 1px solid rgba(217,226,229,0.95);
+  background: rgba(255,255,255,0.78);
+  color: var(--primary-dark);
+  border-radius: 999px;
+  padding: 9px 12px;
+  font-size: 0.84rem;
+  font-weight: 800;
+  box-shadow: 0 4px 12px rgba(35,55,65,0.05);
+}
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.dash-card,
+.tool-panel {
+  background: var(--card);
+  border: 1px solid rgba(217,226,229,0.95);
+  border-radius: 16px;
+  box-shadow: var(--shadow-soft);
+}
+.dash-card { padding: 16px; }
+.dash-label { color: var(--muted); font-size: 0.74rem; font-weight: 900; letter-spacing: 0.07em; text-transform: uppercase; margin-bottom: 6px; }
+.dash-value { color: var(--text); font-size: 1.45rem; font-weight: 950; line-height: 1.1; }
+.dash-note { color: var(--muted); font-size: 0.78rem; line-height: 1.45; margin-top: 6px; }
+.tools-grid {
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+.tool-panel { padding: 18px; }
+.tool-title { display:flex; align-items:center; justify-content:space-between; gap:12px; font-size: 1rem; font-weight: 950; margin-bottom: 10px; }
+.search-row { display:flex; gap:10px; align-items:center; }
+.search-input {
+  width: 100%;
+  border: 1px solid var(--border);
+  background: rgba(255,255,255,0.80);
+  color: var(--text);
+  border-radius: 12px;
+  padding: 12px 13px;
+  font-size: 0.94rem;
+  outline: none;
+}
+body.dark .search-input { background: rgba(255,255,255,0.08); }
+.search-input:focus { border-color: var(--primary); box-shadow: 0 0 0 4px rgba(47,111,115,0.12); }
+.search-results { display:grid; gap:8px; margin-top:12px; max-height: 260px; overflow:auto; padding-right: 2px; }
+.result-item {
+  border: 1px solid var(--border);
+  background: rgba(255,255,255,0.62);
+  border-radius: 12px;
+  padding: 10px 11px;
+  cursor: pointer;
+}
+body.dark .result-item { background: rgba(255,255,255,0.06); }
+.result-item:hover { border-color: var(--primary); }
+.result-item strong { display:block; color: var(--primary-dark); font-size:0.78rem; margin-bottom:4px; }
+.result-item span { display:block; color: var(--text); font-size:0.86rem; line-height:1.45; }
+.result-actions-inline { display:flex; gap:8px; flex-wrap:wrap; margin-top: 10px; }
+.mini-btn {
+  border: 1px solid var(--border);
+  background: rgba(255,255,255,0.76);
+  color: var(--primary-dark);
+  border-radius: 999px;
+  padding: 7px 10px;
+  font-size: 0.78rem;
+  font-weight: 900;
+  cursor: pointer;
+}
+body.dark .mini-btn { background: rgba(255,255,255,0.08); }
+.wrong-groups { display:flex; flex-wrap:wrap; gap:8px; margin-top: 12px; }
+.wrong-chip {
+  border: 1px solid var(--border);
+  background: rgba(255,255,255,0.72);
+  color: var(--text);
+  border-radius: 999px;
+  padding: 8px 10px;
+  font-size: 0.78rem;
+  font-weight: 850;
+  cursor:pointer;
+}
+body.dark .wrong-chip { background: rgba(255,255,255,0.08); }
+.wrong-chip:hover { border-color: var(--accent); color: var(--primary-dark); }
+.wrong-preview { display:grid; gap:8px; margin-top:12px; }
+.wrong-row {
+  display:grid;
+  grid-template-columns: 1fr auto;
+  gap: 10px;
+  align-items:center;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 9px 10px;
+  background: rgba(255,255,255,0.56);
+}
+body.dark .wrong-row { background: rgba(255,255,255,0.06); }
+.wrong-row span { font-size:0.8rem; line-height:1.45; color: var(--text); }
+.wrong-row b { color: var(--primary-dark); }
+.quick-grid { display:grid; grid-template-columns: 1.15fr 0.85fr; gap: 16px; margin-bottom: 16px; }
+.section-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 22px 2px 12px;
+  color: #33434d;
+  font-size: 0.88rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.section-label::after {
+  content: "";
+  height: 1px;
+  flex: 1;
+  margin-left: 12px;
+  background: linear-gradient(90deg, rgba(47,111,115,0.28), transparent);
+}
+.subjects { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 16px; }
+
+.subject-card {
+  background: var(--card);
+  border: 1px solid rgba(217,226,229,0.95);
+  border-radius: var(--radius);
+  padding: 18px 18px 17px;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+  position: relative;
+  overflow: hidden;
+  box-shadow: var(--shadow-soft);
+  min-height: 148px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+.subject-card::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 5px;
+  background: var(--accent, var(--primary));
+}
+.subject-card::after {
+  content: "";
+  position: absolute;
+  top: 16px; right: 16px;
+  width: 34px; height: 34px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--accent, var(--primary)) 16%, transparent);
+}
+.subject-card:hover {
+  border-color: color-mix(in srgb, var(--accent, var(--primary)) 46%, var(--border));
+  transform: translateY(-3px);
+  box-shadow: 0 18px 36px rgba(35,55,65,0.16);
+  background: #fff;
+}
+.subject-card h2 { font-size: 1.04rem; line-height: 1.35; font-weight: 900; margin: 10px 0 4px; color: var(--text); padding-right: 44px; }
+.subject-card .en { font-size: 0.77rem; color: var(--muted); margin-bottom: 12px; line-height: 1.35; min-height: 2.1em; }
+.subject-card .count {
+  align-self: flex-start;
+  font-size: 0.82rem;
+  color: var(--primary-dark);
+  font-weight: 800;
+  border-radius: 999px;
+  background: var(--primary-soft);
+  padding: 7px 10px;
+}
+.subject-card .emoji {
+  font-size: 1.72rem;
+  display: inline-grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 13px;
+  background: color-mix(in srgb, var(--accent, var(--primary)) 14%, #ffffff);
+  border: 1px solid color-mix(in srgb, var(--accent, var(--primary)) 20%, #ffffff);
+}
+.clear-record {
+  font-size: 0.75rem;
+  color: #9a5a14;
+  margin-top: 10px;
+  cursor: pointer;
+  font-weight: 800;
+}
+
+/* ── Quiz ── */
+.quiz-header { margin: 8px 0 20px; }
+.back-btn {
+  background: rgba(255,255,255,0.86); border: 1px solid var(--border);
+  border-radius: 999px; padding: 9px 15px;
+  cursor: pointer; font-size: 0.85rem; color: var(--muted);
+  display: inline-flex; align-items: center; gap: 6px;
+  margin-bottom: 16px; transition: all 0.15s;
+  box-shadow: 0 6px 18px rgba(35,55,65,0.08);
+  font-weight: 800;
+}
+.back-btn:hover { background: #fff; color: var(--primary-dark); transform: translateX(-2px); }
+.progress-bar { height: 10px; background: rgba(217,226,229,0.86); border-radius: 99px; overflow: hidden; margin-bottom: 10px; box-shadow: inset 0 1px 2px rgba(35,55,65,0.08); }
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--primary), var(--accent), var(--rose));
+  border-radius: 99px; transition: width 0.4s cubic-bezier(.34,1.56,.64,1);
+}
+.progress-text { display: flex; justify-content: space-between; gap: 16px; font-size: 0.82rem; color: var(--muted); font-weight: 800; }
+
+.question-card {
+  background: var(--card);
+  border-radius: 20px;
+  padding: 30px 28px 26px;
+  box-shadow: var(--shadow);
+  margin-bottom: 16px;
+  animation: slideIn 0.25s ease;
+  border: 1px solid rgba(217,226,229,0.95);
+}
+@keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+.q-meta { font-size: 0.75rem; color: var(--primary-dark); margin-bottom: 13px; font-weight: 900; letter-spacing: 0.1em; text-transform: uppercase; }
+.q-text { font-size: clamp(1.05rem, 2vw, 1.22rem); line-height: 1.75; font-weight: 800; margin-bottom: 24px; color: var(--text); }
+.options { display: grid; grid-template-columns: 1fr; gap: 11px; }
+
+.option {
+  padding: 14px 16px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  cursor: pointer;
+  font-size: 0.96rem;
+  line-height: 1.55;
+  transition: all 0.15s;
+  display: flex; align-items: flex-start; gap: 12px;
+  background: rgba(255,255,255,0.78);
+  box-shadow: 0 2px 8px rgba(35,55,65,0.04);
+}
+.option .opt-label {
+  font-weight: 900; color: white;
+  min-width: 30px; height: 30px; flex-shrink: 0;
+  font-size: 0.86rem;
+  border-radius: 10px;
+  display: inline-grid;
+  place-items: center;
+  background: var(--primary);
+}
+.option:hover:not(.disabled) {
+  border-color: var(--primary);
+  background: #fff;
+  transform: translateX(3px);
+}
+.option.correct { border-color: var(--success); background: var(--success-bg); }
+.option.correct .opt-label { background: var(--success); color: white; }
+.option.wrong { border-color: var(--danger); background: var(--danger-bg); }
+.option.wrong .opt-label { background: var(--danger); color: white; }
+.option.disabled { cursor: default; }
+.option.show-correct { border-color: var(--success); background: var(--success-bg); }
+.option.show-correct .opt-label { background: var(--success); color: white; }
+
+.feedback {
+  margin-top: 16px;
+  padding: 15px 16px;
+  border-radius: 14px;
+  font-size: 0.9rem;
+  line-height: 1.6;
+  display: none;
+  border: 1px solid;
+  box-shadow: 0 6px 18px rgba(35,55,65,0.06);
+}
+.feedback.show { display: block; animation: fadeIn 0.22s ease; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+.feedback.correct-fb { background: var(--success-bg); border-color: var(--success); color: #065f46; }
+.feedback.wrong-fb { background: var(--danger-bg); border-color: var(--danger); color: #9f1239; }
+.feedback-icon { font-size: 1.1rem; margin-right: 4px; }
+.review-strip {
+  margin-top: 16px;
+  display: grid;
+  gap: 10px;
+}
+.review-card {
+  text-align: left;
+  border: 1px solid var(--border);
+  background: rgba(255,255,255,0.72);
+  border-radius: 14px;
+  padding: 13px 14px;
+  line-height: 1.55;
+  font-size: 0.9rem;
+}
+body.dark .review-card { background: rgba(255,255,255,0.06); }
+.review-card.correct-review { border-color: var(--success); }
+.review-card.wrong-review { border-color: var(--danger); }
+.review-card .tag { display:inline-flex; border-radius:999px; padding:4px 8px; font-size:0.72rem; font-weight:900; margin-bottom:6px; background: var(--primary-soft); color: var(--primary-dark); }
+
+.next-btn {
+  width: 100%; margin-top: 14px;
+  padding: 15px;
+  background: linear-gradient(135deg, var(--primary), var(--accent));
+  color: white; border: none; border-radius: 14px;
+  font-size: 1rem; font-weight: 700;
+  cursor: pointer; transition: all 0.18s;
+  display: none;
+  box-shadow: 0 12px 24px rgba(47,111,115,0.24);
+}
+.next-btn:hover { transform: translateY(-1px); box-shadow: 0 16px 28px rgba(47,111,115,0.30); }
+.next-btn:active { transform: translateY(0); }
+.next-btn.show { display: block; animation: fadeIn 0.2s ease; }
+
+/* ── Result ── */
+.result-card {
+  background: var(--card);
+  border-radius: 22px;
+  padding: 40px 28px;
+  text-align: center;
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border);
+}
+.result-score {
+  font-size: 4.5rem; font-weight: 900; line-height: 1;
+  color: var(--primary-dark);
+  background: linear-gradient(135deg, var(--primary-dark), var(--accent));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.result-label { color: var(--muted); margin: 8px 0 16px; font-size: 1rem; }
+.result-grade { font-size: 1.2rem; font-weight: 700; margin-bottom: 6px; color: var(--text); }
+.result-actions { display: flex; gap: 10px; margin-top: 22px; flex-wrap: wrap; }
+.result-actions button {
+  flex: 1; padding: 13px; min-width: 120px;
+  border-radius: 14px; font-size: 0.93rem;
+  font-weight: 700; cursor: pointer;
+  border: 2px solid; transition: all 0.18s;
+}
+.btn-retry {
+  background: linear-gradient(135deg, var(--primary), var(--accent));
+  color: white; border-color: transparent;
+  box-shadow: 0 10px 20px rgba(47,111,115,0.22);
+}
+.btn-retry:hover { transform: translateY(-1px); box-shadow: 0 14px 26px rgba(47,111,115,0.28); }
+.btn-menu { background: white; color: var(--primary-dark); border-color: #b8d4d3; }
+.btn-menu:hover { background: var(--primary-soft); }
+
+.disabled-card { opacity: 0.45; cursor: default !important; filter: grayscale(0.3); }
+.disabled-card:hover { transform: none !important; box-shadow: var(--shadow-soft) !important; border-color: var(--border) !important; }
+.subject-card:focus-visible,
+.option:focus-visible,
+button:focus-visible {
+  outline: 3px solid rgba(184,107,43,0.36);
+  outline-offset: 3px;
+}
+/* Responsive */
+@media (max-width: 720px) {
+  #app { padding: 16px 12px 58px; }
+  .menu-header { padding: 26px 20px 24px; margin-top: 4px; }
+  .quick-grid { grid-template-columns: 1fr; }
+  .subjects { grid-template-columns: 1fr; gap: 12px; }
+  .subject-card { min-height: 150px; padding: 15px 14px; }
+  .subject-card h2 { font-size: 0.96rem; padding-right: 36px; }
+  .subject-card .en { font-size: 0.72rem; }
+  .question-card { padding: 22px 16px; border-radius: 18px; }
+  .result-card { padding: 32px 18px; }
+  .dashboard-grid { grid-template-columns: 1fr; }
+  .tools-grid { grid-template-columns: 1fr; }
+  .option { min-height: 56px; font-size: 1rem; }
+  .next-btn.show {
+    position: sticky;
+    bottom: 10px;
+    z-index: 5;
+  }
+}
+@media (max-width: 440px) {
+  .subjects { grid-template-columns: 1fr; }
+  .menu-header h1 { font-size: 2rem; }
+  .menu-stats { gap: 8px; }
+  .stat-pill { font-size: 0.78rem; }
+  .dashboard-grid { grid-template-columns: 1fr; }
+  .top-actions { flex-direction: column; }
+  .top-actions .mode-btn { width: 100%; }
+  .search-row { flex-direction: column; align-items: stretch; }
+  .search-row .mini-btn { width: 100%; min-height: 46px; }
+  .wrong-row { grid-template-columns: 1fr; }
+  .wrong-row .mini-btn { width: 100%; min-height: 42px; }
+  .option { padding: 13px 12px; }
+  .progress-text { font-size: 0.76rem; }
+  .result-actions { flex-direction: column; }
+  .result-actions button { width: 100%; }
+}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+const SUBJECTS = [
+  { id: "phonetics", name: "英語語音學", en: "English Phonetics", emoji: "🔊", color: "#6366f1" },
+  { id: "linguistics", name: "英語語言學概論", en: "Introduction to English Linguistics", emoji: "🧠", color: "#0ea5e9" },
+  { id: "sla", name: "外語習得", en: "Second Language Acquisition", emoji: "🌱", color: "#10b981" },
+  { id: "methods", name: "英語教學法", en: "Language Teaching Methods", emoji: "📚", color: "#f59e0b" },
+  { id: "materials", name: "英語教材教法", en: "Materials & Methods", emoji: "🗂️", color: "#8b5cf6" },
+  { id: "assessment", name: "英語教學評量", en: "Language Assessment", emoji: "📊", color: "#ec4899" },
+  { id: "curriculum", name: "語言課程設計", en: "Language Curriculum Design", emoji: "🗺️", color: "#14b8a6" },
+  { id: "western_lit", name: "西洋文學概論", en: "Intro to Western Literature (12神)", emoji: "⚡", color: "#f97316" },
+  { id: "british_lit", name: "英國文學", en: "British Literature", emoji: "📖", color: "#64748b" },
+];
+
+const QUESTIONS = {
+phonetics: [
+  { q: "語音學中，研究發音器官如何產生語音的分支是？", opts: ["聲學語音學 Acoustic Phonetics","發音語音學 Articulatory Phonetics","聽知覺語音學 Auditory Phonetics","音系學 Phonology"], ans: 1, exp: "Articulatory Phonetics 研究嘴唇、舌頭、下顎等發音器官如何在聲道產生語音。" },
+  { q: "Phone（音素）使用哪種符號表示？", opts: ["/ /","< >","[ ]","{ }"], ans: 2, exp: "Phone 使用 [ ] 方括號表示，例如 [pʰ] 表示送氣的 p。" },
+  { q: "Phoneme（音位）使用哪種符號表示？", opts: ["/ /","[ ]","{ }","< >"], ans: 0, exp: "Phoneme 使用 / / 斜線表示，例如 /p/ 和 /b/ 是可以區別意義的音位。" },
+  { q: "Allophone（同位音）的定義是？", opts: ["具有區別意義功能的抽象音位","只差一個音位的詞對","同一音位在不同語境中的可預測變體","聽者感知語音的方式"], ans: 2, exp: "Allophone 是同一 Phoneme 在不同語音環境中的可預測變體，如 /p/ 的 [pʰ]（詞首）和 [p]（/s/ 後）。" },
+  { q: "「peak」中的 [pʰ] 和「speak」中的 [p] 是：", opts: ["最小對立 Minimal Pairs","兩個不同的音位","/p/ 的同位音 Allophones","自由變體 Free Variation"], ans: 2, exp: "詞首送氣 [pʰ] 和 /s/ 後不送氣 [p] 都是 /p/ 在不同環境中的可預測變體，屬於同位音。" },
+  { q: "IPA 由誰於 1888 年創立，並以什麼原則為基礎？", opts: ["Chomsky；普遍語法原則","Kenyon & Knott；K.K.音標系統","Paul Passy 等人；one sound, one symbol","Bloomfield；結構主義原則"], ans: 2, exp: "IPA（國際音標）由 Paul Passy 等人於 1888 年創立，核心原則是「一個音一個符號」。" },
+  { q: "下列哪個音是由軟顎（Velum）發出的？", opts: ["/t/","/s/","/ŋ/","/f/"], ans: 2, exp: "/ŋ/（ng音）是軟顎音（Velar）。軟顎也控制 /k/ 和 /g/。" },
+  { q: "美式英語的雙母音（Diphthongs）共有幾個？", opts: ["2","3","4","5"], ans: 1, exp: "三個雙母音：/aɪ/（my）、/aʊ/（cow）、/ɔɪ/（boy）。" },
+  { q: "母音 /i/（seat）的完整語音描述是？", opts: ["High back tense rounded","High front tense unrounded","Mid front lax unrounded","Low front lax unrounded"], ans: 1, exp: "/i/ 是 High front tense unrounded 母音，舌位高、靠前、緊張、不圓唇。" },
+  { q: "Stop/Plosive（塞音/爆破音）的發音方式是？", opts: ["氣流從鼻腔流出","氣流在窄縫中形成摩擦","氣流完全阻塞後爆發","舌頭快速滑向後接母音"], ans: 2, exp: "塞音先完全阻塞氣流，再爆發釋出。英文塞音：/p, b, t, d, k, g/。" },
+  { q: "/tʃ/ 和 /dʒ/ 屬於哪一種發音方式？", opts: ["擦音 Fricatives","塞擦音 Affricates","鼻音 Nasals","流音 Liquids"], ans: 1, exp: "Affricates（塞擦音）= Stop + Fricative 的組合，/tʃ/（church）和 /dʒ/（judge）。" },
+  { q: "下列哪個音是雙唇音（Bilabial）？", opts: ["/f/","/θ/","/m/","/n/"], ans: 2, exp: "/m/ 是雙唇鼻音（Bilabial Nasal）。/f/ 是唇齒音，/θ/ 是齒間音，/n/ 是齒齦鼻音。" },
+  { q: "拼字相同但發音不同的詞（如 wind n./v.）稱為？", opts: ["Homonyms","Homographs","Homophones","Synonyms"], ans: 1, exp: "Homographs（同形異音）：拼字相同，發音不同。Homophones（同音詞）：發音相同，拼字可不同（如 sun/son）。" },
+  { q: "以下哪個是摩擦音（Fricative）？", opts: ["/p/","/m/","/s/","/l/"], ans: 2, exp: "/s/ 是摩擦音，氣流從窄縫中通過形成摩擦。英文摩擦音：/f, v, θ, ð, s, z, ʃ, ʒ, h/。" },
+  { q: "Schwa（/ə/）的特徵是？", opts: ["重讀音節的高前母音","非重讀音節的央母音，如 about 的第一個音","低後不圓唇母音","重讀音節的捲舌母音"], ans: 1, exp: "Schwa /ə/ 是非重讀音節的央母音，是英文最常見的母音，如 about、sofa 中的弱讀音節。" },
+  { q: "Sonorants（響音）包含哪些子音？", opts: ["Stops + Fricatives","Nasals + Liquids + Glides","Fricatives + Affricates","Stops + Affricates"], ans: 1, exp: "Sonorants（響音）包括 Nasals（鼻音）+ Liquids（流音）+ Glides（滑音），氣流阻礙較少。" },
+  { q: "「Complementary Distribution（互補分佈）」是指？", opts: ["兩個音素可以在相同環境中互換而不改變意義","兩個音素在相同語音環境中永遠不會共現，各自出現的環境互補","兩個詞具有完全相同的語意","兩個音素在所有環境中都可自由變換"], ans: 1, exp: "Complementary Distribution：兩個音素永遠不出現在相同的語音環境，是判斷它們為同一音位的 allophones 的依據之一。例如 [pʰ] 出現在詞首，[p] 出現在 /s/ 後，兩者互補。" },
+  { q: "「Voiced（濁音）」與「Voiceless（清音）」的區別是？", opts: ["氣流大小不同","發音部位不同","聲帶是否振動","發音方式不同"], ans: 2, exp: "Voiced（濁音）：發音時聲帶振動，如 /b, d, g, v, z/。Voiceless（清音）：聲帶不振動，如 /p, t, k, f, s/。這是子音分類三大維度之一（Place / Manner / Voicing）。" },
+  { q: "英語詞首清塞音（如 peak 的 /p/）會出現什麼語音特徵？", opts: ["不送氣 unaspirated","送氣 aspirated [pʰ]","不爆破 unreleased","完全鼻化"], ans: 1, exp: "詞首清塞音（/p, t, k/）在英語中通常帶有送氣（aspiration）：peak [pʰik]。/s/ 後不送氣：speak [spik]。詞尾可能不爆破：lip [lɪp˺]。這三種是 /p/ 的 allophones。" },
+  { q: "下列哪組是「最小對立（Minimal Pairs）」？", opts: ["seat / seat","cat / cats","food / foot","bit / bitten"], ans: 2, exp: "Minimal Pairs（最小對）：food /fuːd/ vs foot /fʊt/，只有一個音位不同（/uː/ vs /ʊ/），用來確認這是兩個不同的 phoneme。研究最小對的學科稱為 Phonemics。" },
+  { q: "子音 /θ/（think）和 /ð/（this）的發音部位是？", opts: ["雙唇音 Bilabial","唇齒音 Labiodental","齒間音 Interdental","齒齦音 Alveolar"], ans: 2, exp: "/θ/ 和 /ð/ 是齒間音（Interdental）：舌尖放在上下齒之間。/θ/ 是清音（think/bath），/ð/ 是濁音（this/breathe）。" },
+  { q: "K.K.音標的創始人是？於哪一年制定？", opts: ["Paul Passy；1888","Kenyon & Knott；1953","Trager & Smith；1951","Chomsky & Halle；1968"], ans: 1, exp: "K.K.（Kenyon & Knott）音標於 1953 年制定，在台灣高中廣泛使用。Paul Passy 1888 年創立 IPA；T.S.（Trager & Smith）1951 年，美國語言學家慣用。" },
+  { q: "/l/ 和 /r/ 屬於哪個子音類別？", opts: ["Nasals（鼻音）","Fricatives（摩擦音）","Liquids（流音）","Glides（滑音）"], ans: 2, exp: "Liquids（流音）：/l/（側音 lateral，氣流從舌兩側流出）和 /r/（捲舌音 retroflex）。兩者都是響音（Sonorant）的一部分。" },
+  { q: "滑音（Glides / Semivowels）/w/ 和 /j/ 的主要特徵是？", opts: ["氣流完全阻塞後爆發","氣流從鼻腔流出","發音類似母音但快速滑向後接母音，無法單獨構成音節","氣流在窄縫摩擦發音"], ans: 2, exp: "Glides（滑音/半母音）：/w/ 和 /j/（/hw/ 也算）。發音特性像母音，但快速過渡到後接母音（nonsyllabic）。屬響音（Sonorant），包含在 Approximants（近似音）中。" },
+  { q: "以下哪個是「後母音（Back Vowel）」？", opts: ["/i/ (seat)","/æ/ (sat)","/u/ (food)","/ε/ (set)"], ans: 2, exp: "/u/ 是 High back tense rounded 後母音。/i/、/æ/、/ε/ 都是前母音（Front Vowels）。後母音還有 /ʊ, o, ɔ, ɑ/。" },
+],
+
+linguistics: [
+  { q: "一個試圖規定語言應該如何使用的語法，稱為？", opts: ["描述性語法 Descriptive Grammar","規範性語法 Prescriptive Grammar","普遍語法 Universal Grammar","生成語法 Generative Grammar"], ans: 1, exp: "Prescriptive Grammar（規範性語法）規定應該如何說話；Descriptive Grammar（描述性語法）描述人們實際的說法。" },
+  { q: "Morphology（形態學）的研究對象是？", opts: ["音節結構","語音系統","詞素與構詞規則","句子的真值條件"], ans: 2, exp: "Morphology 研究 morpheme（詞素）和構詞規則，例如 un-happy-ness 如何由語素組成。" },
+  { q: "語言意義的最小單位稱為？", opts: ["Phoneme（音位）","Syllable（音節）","Word（詞）","Morpheme（詞素）"], ans: 3, exp: "Morpheme 是語言中最小的有意義單位，如 un-、-ness、book 各是一個詞素。" },
+  { q: "Free morpheme（自由語素）的定義是？", opts: ["一定要加前綴才能使用","可以獨立存在的語素","一定要加後綴才能使用","只能出現在詞尾"], ans: 1, exp: "Free morpheme 可以獨立使用（如 book、run）。Bound morpheme 不能獨立使用（如 un-、-ness）。" },
+  { q: "下列哪個詞是 content word（實義詞）而非 function word（功能詞）？", opts: ["the","and","usually","of"], ans: 2, exp: "usually 是副詞，屬於 content word（有具體詞彙意義）。the、and、of 是 function words（功能詞）。" },
+  { q: "同時附加在詞根首尾的詞綴稱為？", opts: ["前綴 Prefix","後綴 Suffix","中綴 Infix","環綴 Circumfix"], ans: 3, exp: "Circumfix（環綴）同時附加在詞根的首尾，如德語的 ge-...-(e)t 表示過去分詞。" },
+  { q: "英語中所有屈折語素（Inflectional Morphemes）都是？", opts: ["前綴 Prefixes","後綴 Suffixes","中綴 Infixes","環綴 Circumfixes"], ans: 1, exp: "英語的所有屈折語素（如 -ed, -s, -ing, -er, -est）都是後綴，附加在詞根後面。" },
+  { q: "「sincerity」這個詞的形態最佳描述為？", opts: ["複合名詞 Compound noun","簡單名詞 Simple noun","衍生名詞 Derived noun","屈折名詞 Inflected noun"], ans: 2, exp: "sincerity = sincere + -ity，加上衍生後綴 -ity，改變詞性（形→名），屬衍生名詞。" },
+  { q: "因結構差異而具有兩種意義的句子，稱為？", opts: ["語意模糊 Semantically ambiguous","語用模糊 Pragmatically vague","結構模糊 Structurally ambiguous","矛盾 Contradiction"], ans: 2, exp: "Structural ambiguity（結構模糊）是因句子的結構（短語結構）不同而產生歧義，而非詞彙本身模糊。" },
+  { q: "真值永遠為假的句子稱為？", opts: ["同義反覆 Tautology","矛盾 Contradiction","蘊涵 Entailment","前提 Presupposition"], ans: 1, exp: "Contradiction（矛盾）：真值永遠為假的句子，如「這個單身漢已婚」。Tautology：永遠為真。" },
+  { q: "下列哪個是 NP（名詞短語）？", opts: ["afraid of death","terribly sorry","in the future","the lady in white"], ans: 3, exp: "the lady in white = Det + N + PP，是完整的名詞短語 NP。其他選項分別是 AP、AP、PP。" },
+  { q: "下列哪個是 VP（動詞短語）？", opts: ["surprised by how easily she can start to lie to her best friend","was guilty of intentional murder","gave the students","nice to meet you"], ans: 2, exp: "gave the students = V + NP（gave 是 Vt，the students 是 NP），構成完整 VP。" },
+  { q: "下列哪個只包含一個詞素（morpheme）？", opts: ["teacher","writer","monster","keeper"], ans: 2, exp: "monster 是單一詞素。teacher=teach+er、writer=write+er、keeper=keep+er，後三個各有兩個詞素。" },
+  { q: "下列哪個是複合詞（compound word）？", opts: ["Korea","windshield","yellowish","games"], ans: 1, exp: "windshield = wind + shield，兩個自由語素組合成複合詞。yellowish 是衍生詞（+ish），Korea 和 games 是單純詞。" },
+  { q: "下列哪個詞包含屈折後綴（inflectional suffix）？", opts: ["wax","slice","shoes","fuss"], ans: 2, exp: "shoes = shoe + -s（複數屈折後綴）。wax、slice、fuss 都沒有屈折語素。" },
+  { q: "關於英語衍生後綴（derivational suffixes），下列何者正確？", opts: ["一定改變詞根的詞類","用來表達英語的時態","若一個衍生後綴已被用於構詞，另一個語意相近的後綴可能被阻擋（blocking）","第一類後綴必須接在第二類後綴之後"], ans: 2, exp: "Blocking（阻擋）：如 glory 已有 glorious，所以 *gloryous 不被接受。衍生後綴不一定改變詞類（如 -ish 有時不改）。" },
+  { q: "透過去掉一個「被誤認為是詞綴」的部分來創造新詞，這種方式稱為？", opts: ["Short-formation","Back-formation","Transformation","Reformation"], ans: 1, exp: "Back-formation（逆構詞）：如把 editor 誤認為 edit+or，因此創造動詞 edit。" },
+  { q: "下列哪組是關係反義詞（relational opposites）？", opts: ["big vs small","bear vs bare","send vs transmit","employer vs employee"], ans: 3, exp: "Relational opposites 是互補關係，如 employer/employee（一個的存在以另一個為前提）。big/small 是等級反義詞。" },
+  { q: "兩個句子在所有情況下真值相同（都真或都假），它們之間的關係是？", opts: ["同義 Synonymous","矛盾 Contradictory","模糊 Ambiguous","等值 Vague"], ans: 3, exp: "若兩句在所有可能情況下有相同真值，稱為 equivalent（等值）或 vague（此題選 Vague）。" },
+  { q: "「I forgot to lock the door」的前提（presupposition）是？", opts: ["我沒有鎖門","我鎖了門","我總是忘事","我有阿茲海默症"], ans: 0, exp: "Presupposition（前提）：「我忘記鎖門」預設了「我沒有鎖門」這個事實在說話者心中是真的。" },
+  { q: "下列哪個不是 deictic word（指示詞）？", opts: ["this","yesterday","there","Mars"], ans: 3, exp: "Mars（火星）是專有名詞，不依賴語境。Deictic words 的指涉依賴說話者的時空位置，如 this、here、now、yesterday。" },
+  { q: "語言六大特性中，「創造性（Creativity / Productivity）」是指？", opts: ["語言符號與意義無必然關聯","可以談論非當下時空的事","有限的語法規則可以產生和理解無限多新句子","語言通過後天學習傳遞"], ans: 2, exp: "Creativity（創造性）：語言使用者能用有限規則產生無限多新句子。這是人類語言有別於動物溝通系統的核心特徵之一。" },
+  { q: "語言的「雙重性（Duality）」是指？", opts: ["語言有口說和書面兩種形式","語言分為音位層（本身無意義的聲音）和語義層（有意義的語素/詞）兩個層次","語言同時有任意性和創造性","每個說話者同時能說和能聽"], ans: 1, exp: "Duality（雙重性）：①音位層（phonological）：聲音本身無意義（/p/, /a/）②語義層（semantic）：聲音組合後有意義（pat, tap）。有限聲音可組合成無限意義單位。" },
+  { q: "語用學「合作原則（Cooperative Principle）」由誰提出？四大準則是？", opts: ["Austin；言語行為三層","Grice；量（Quantity）、質（Quality）、關聯（Relation）、方式（Manner）","Brown & Levinson；面子威脅行為四種","Searle；直接/間接言語行為"], ans: 1, exp: "Cooperative Principle（Grice）：說話者應遵守四準則——Quantity（量，說足夠的話）、Quality（質，不說假話）、Relation（關聯）、Manner（方式，清楚簡潔）。違反準則產生 conversational implicature。" },
+  { q: "「Entailment（蘊涵）」與「Presupposition（前提）」的核心差異是？", opts: ["兩者完全相同","蘊涵在句子為真時成立；前提不論句子真假都成立","前提只在肯定句存在；蘊涵只在否定句存在","兩者都只在句子為真時才存在"], ans: 1, exp: "Entailment：A 為真 → B 必然為真。Presupposition：不論句子真假，前提都預設成立。例：「我忘了鎖門」→前提「我有意圖要鎖門」，句子為真或假時都成立。" },
+],
+
+sla: [
+  { q: "Krashen 的「習得-學習假說」中，Acquisition（習得）的特徵是？", opts: ["有意識地學習語法規則","通過課堂教學獲得","潛意識、自然的過程","需要明確的形式練習"], ans: 2, exp: "Acquisition（習得）是潛意識、自然的過程（如小孩學母語）；Learning（學習）是有意識地學習規則。" },
+  { q: "Krashen 的「輸入假說」核心概念 i+1 中，i 代表？", opts: ["理想輸入量","學習者目前的語言程度","老師的教學程度","目標語的標準程度"], ans: 1, exp: "i 代表學習者目前的能力水準，i+1 表示略高於現有程度的可理解輸入（comprehensible input）。" },
+  { q: "「情意過濾假說（Affective Filter Hypothesis）」指的是？", opts: ["輸入必須略超過現有程度","語法習得有固定的自然順序","高焦慮或低動機會阻擋輸入進入語言習得機制","習得的規則可用來監控輸出"], ans: 2, exp: "Affective Filter：焦慮、低動機、低自信會像過濾器一樣阻擋可理解輸入進入 LAD，降低習得效果。" },
+  { q: "Selinker 提出的「中介語（Interlanguage）」是指？", opts: ["目標語的標準方言","學習者 L1 和 L2 的混合錯誤","學習者建立的獨立語言系統，有自己的規則","母語干擾造成的固定錯誤"], ans: 2, exp: "Interlanguage 是學習者發展中的獨立語言系統，不是 L1 或 L2 的錯誤版，而是有系統性規則的發展階段。" },
+  { q: "化石化（Fossilization）是指？", opts: ["學習者記憶詞彙的策略","某些不符目標語的形式長期固定不再改進","學習者刻意保留母語特徵","輸入進入記憶系統的過程"], ans: 1, exp: "Fossilization：某些非目標語形式長期停滯不再進步，尤其在溝通不受阻時更容易發生。" },
+  { q: "Swain 的「輸出假說（Output Hypothesis）」主張輸出有哪三大功能？", opts: ["記憶、應用、評估","模仿、操練、創造","注意缺口（noticing gap）、假設測試、後設語言反思","輸入處理、內化、自動化"], ans: 2, exp: "Swain 主張輸出的三功能：①noticing gap（注意自己的不足）②hypothesis testing（測試語言假設）③metalinguistic reflection（反思語言形式）。" },
+  { q: "Schmidt 的「注意假說（Noticing Hypothesis）」核心主張是？", opts: ["可理解輸入是習得的唯一來源","沒有被學習者注意到的語言形式很難被習得","母語對二語習得有決定性干擾","課堂明確教學比自然習得更有效"], ans: 1, exp: "Noticing Hypothesis：學習者必須「注意到」（consciously notice）某個語言形式，它才有可能進入習得系統。" },
+  { q: "Long 的「互動假說（Interaction Hypothesis）」強調？", opts: ["大量的書面輸入最為有效","溝通互動中的意義協商使輸入更可理解","母語習得與外語習得本質相同","情感因素比語言輸入更重要"], ans: 1, exp: "Interaction Hypothesis（Long）：溝通互動中的 negotiation of meaning（意義協商）讓輸入更可理解，促進習得。" },
+  { q: "「ZPD（最近發展區）」是哪位學者提出的，用於哪個理論？", opts: ["Krashen；監控模型","Long；互動假說","Vygotsky；社會文化理論","Selinker；中介語理論"], ans: 2, exp: "ZPD（Zone of Proximal Development）由 Vygotsky 提出，是學習者獨立完成的任務和在輔助下能完成的任務之間的距離。" },
+  { q: "「語言天賦（Language Aptitude）」最常用哪個測驗來測量？", opts: ["TOEFL","MLAT（Modern Language Aptitude Test）","IELTS","PISA"], ans: 1, exp: "MLAT 是測量語言習得特定能力的標準測驗，包含辨音、記憶、歸納規則等能力。" },
+  { q: "Gardner & Lambert 將動機分為哪兩大類？", opts: ["內在動機 vs 外在動機","整合型（integrative）vs 工具型（instrumental）","任務型 vs 成就型","情境型 vs 個人型"], ans: 1, exp: "Integrative motivation：想融入目標語社群；Instrumental motivation：為實際目的（工作、考試等）學語言。" },
+  { q: "關於 SLA 的「迷思」，下列何者是正確看法？", opts: ["語言主要靠模仿","越早開始學越好","錯誤大多來自母語干擾","自由互動通常利多於弊，關鍵在任務設計"], ans: 3, exp: "Pair/group work 的效益通常大於風險（互相學錯的問題）。關鍵在任務設計清楚。其他三項都是 SLA 的常見迷思。" },
+  { q: "「Recast（重述）」作為課堂糾錯策略的特點是？", opts: ["直接告知學生錯誤所在","用正確形式重新說一遍，自然流暢","提示語法規則讓學生思考","引導學生補出正確形式"], ans: 1, exp: "Recast：教師用正確形式重述學生的錯誤，溝通不中斷。缺點：學生可能沒注意到已被糾錯。" },
+  { q: "「Focus on Form」與「Focus on Forms」的差異是？", opts: ["前者只教文法，後者只教溝通","前者在溝通中短暫聚焦語言形式；後者是預先設計的文法點清單","前者用於成人，後者用於兒童","兩者完全相同，只是說法不同"], ans: 1, exp: "Focus on Form（現代推薦）：在意義導向的溝通活動中，短暫聚焦語言形式。Focus on Forms：預先列出文法清單逐一教學（傳統做法）。" },
+  { q: "中介語（Interlanguage）的錯誤來源不包括？", opts: ["L1 母語干擾","過度概括（Overgeneralization）","教學影響","目標語的不規則性完全消失"], ans: 3, exp: "中介語錯誤來源：L1 transfer、overgeneralization（如 goed）、教學影響、學習/溝通策略。「目標語不規則性消失」不是錯誤來源說法。" },
+  { q: "天賦論（Innatism / Innatist Perspective）的核心主張是？", opts: ["語言能力完全靠後天學習和模仿習得","人類天生具有語言習得裝置（LAD）和普遍語法（UG），語言能力是先天的","社會互動是語言習得最核心的機制","語言習得依賴行為強化和習慣形成"], ans: 1, exp: "Innatism（Chomsky）：人類天生具有 Language Acquisition Device（LAD）和 Universal Grammar（UG）。即使輸入不完整（Poverty of Stimulus），兒童仍能習得完整的語法系統。" },
+  { q: "「Scaffolding（鷹架）」源自哪個 SLA 理論？其定義是？", opts: ["Krashen 的監控模型；監控學習者的輸出","行為主義；用獎懲強化正確語言習慣","Vygotsky 的社會文化論；更有能力者提供臨時支援協助學習者完成 ZPD 內的任務","天賦論；語言能力的先天結構"], ans: 2, exp: "Scaffolding（鷹架）是社會文化論（Sociocultural Theory，Vygotsky）的概念：教師或同伴提供臨時的、有針對性的支援，幫助學習者完成其獨力無法完成但在 ZPD 範圍內的任務，之後逐漸撤除鷹架。" },
+  { q: "Innatist 理論對語言教學的限制是？", opts: ["無法解釋為何學習者會犯錯","可以解釋系統性的語言發展，但對課堂具體教學策略的直接指引較少","完全否定課堂教學的效果","主張任何教學法都能達到母語者程度"], ans: 1, exp: "Innatism 可解釋語言習得的系統性（UG 的存在），但對「課堂教師應怎麼做」的具體指引有限，因為它強調的是先天機制而非教學法。" },
+  { q: "Krashen 的「監控假說（Monitor Hypothesis）」說明？", opts: ["輸入必須略高於現有程度才有效","學習到的規則只用來「監控」和修正自己的輸出，無法自動啟動習得系統","母語者的習得完全不需要監控","焦慮越低，監控越無效"], ans: 1, exp: "Monitor Hypothesis：有意識「學習（Learning）」的規則只能作為 Monitor（監控器），在有時間、注意規則、知道規則的條件下，對輸出進行事後修正，無法直接驅動流暢習得。" },
+  { q: "Krashen 的「自然順序假說（Natural Order Hypothesis）」主張？", opts: ["語言習得的速度因人而異，無固定順序","語法結構的習得有可預測的固定順序，與教學順序無關","輸入順序決定習得順序","成人比兒童習得語言的順序更自然"], ans: 1, exp: "Natural Order Hypothesis：語法形態素的習得有固定且可預測的自然順序（如 -ing 先於 -s third person）。此順序跨語言背景相似，且與教學順序或頻率無直接關係。" },
+  { q: "Dörnyei 的「L2 動機自我系統（L2 Motivational Self System）」包含哪三個要素？", opts: ["整合型、工具型、恐懼型","理想 L2 自我、應然 L2 自我、L2 學習體驗","內在動機、外在動機、無動機","習得、學習、監控"], ans: 1, exp: "Dörnyei L2 Motivational Self System：① Ideal L2 Self（理想中能說流利 L2 的自己）② Ought-to L2 Self（社會期望應具備的 L2 能力）③ L2 Learning Experience（課堂環境、教師、同學等學習體驗）。" },
+  { q: "「關鍵期假說（Critical Period Hypothesis, CPH）」與語言習得的關係？", opts: ["青春期後語言習得完全不可能","Lenneberg 提出：青春期前習得語言較容易達到母語者程度；之後語言化石化風險增加","關鍵期只影響發音，不影響語法","所有語言面向的關鍵期都在 5 歲前結束"], ans: 1, exp: "CPH（Lenneberg）：青春期（約 12-13 歲）前習得語言，尤其發音和語法，更容易達到母語者程度。青春期後，大腦側化完成，習得效率下降，尤其在語音層面更明顯。" },
+  { q: "「意義協商（Negotiation of Meaning）」策略包括哪些形式？", opts: ["Clarification request、Confirmation check、Comprehension check","Translation、Paraphrase、Avoidance","Recasting、Explicit correction、Metalinguistic feedback","Input flooding、Dictation、Cloze test"], ans: 0, exp: "Negotiation of Meaning 策略：Clarification request（請對方澄清）、Confirmation check（確認自己理解正確）、Comprehension check（確認對方聽懂）。這些互動過程讓輸入更可理解，促進習得。" },
+  { q: "「Intake（攝入）」與「Input（輸入）」的差異是？", opts: ["Intake 是書面輸入，Input 是口頭輸入","Input 是學習者接收到的全部語言；Intake 是其中實際被注意並進入處理的部分","兩者完全相同，只是說法不同","Intake 比 Input 量更大"], ans: 1, exp: "Input 是學習者接收到的全部語言刺激；Intake 是其中被學習者「注意到」（noticed）並進入語言習得機制處理的部分。並非所有 Input 都成為 Intake（對應 Schmidt 的 Noticing Hypothesis）。" },
+  { q: "「正遷移（Positive Transfer）」與「負遷移（Negative Transfer）」的差異？", opts: ["正遷移指學習進步，負遷移指退步","正遷移：L1 與 L2 相似，促進習得；負遷移（干擾）：L1 習慣干擾 L2 正確形式","正遷移來自課堂教學，負遷移來自自然習得","兩者都指母語的干擾效果"], ans: 1, exp: "Positive Transfer：L1 和 L2 相似之處幫助 L2 習得（如英語和荷蘭語的相似結構）。Negative Transfer（Interference/L1 Transfer）：L1 習慣干擾 L2 正確形式，造成錯誤（如中文母語者說 I very like it）。" },
+],
+
+methods: [
+  { q: "Grammar-Translation Method（語法翻譯法）的理論基礎是？", opts: ["行為主義 Behaviorism","新古典主義 Neo-classical","認知主義 Cognitivism","社會文化論 Sociocultural Theory"], ans: 1, exp: "GTM 以新古典主義為基礎，強調閱讀文學、翻譯、文法規則分析，是最傳統的語言教學法。" },
+  { q: "Audio-Lingual Method（聽說法）的理論基礎是？", opts: ["人文主義 Humanism","行為主義+結構語言學","天賦論 Innatism","互動理論 Interactionism"], ans: 1, exp: "ALM 結合 Skinner 的行為主義（habit formation）和結構語言學，強調 pattern drill 和對話記憶。" },
+  { q: "Silent Way（沉默法）的特色是？", opts: ["大量可理解輸入，教師多說","學生聽指令做身體反應","教師保持沉默，學生自主發現規則","以音樂和舒適環境降低學習焦慮"], ans: 2, exp: "Silent Way（Gattegno）：教師大部分時間保持沉默，使用 Cuisenaire rods 和 color charts，讓學生自主發現語言規則。" },
+  { q: "TPR（Total Physical Response，全身反應法）的核心原則是？", opts: ["語法形式優先於溝通","理解先於產出，聽指令後做身體反應","透過音樂降低情感過濾","學生用母語翻譯目標語"], ans: 1, exp: "TPR（Asher）：理解（comprehension）應先於產出（production）。教師說指令，學生用動作回應。" },
+  { q: "CLT（溝通式語言教學法）的核心目標是？", opts: ["完美的語法準確度","培養溝通能力（Communicative Competence）","背誦大量對話範本","以母語作為主要媒介語"], ans: 1, exp: "CLT（Communicative Language Teaching）以 Hymes 的溝通能力理論為基礎，強調在真實溝通情境中使用語言。" },
+  { q: "TBLT（任務導向語言教學法）的教學序列是？", opts: ["語法講解→練習→測驗","Pre-task → Task cycle → Language focus","Pre-task → Pattern drill → Post-task","Background → Input → Output"], ans: 1, exp: "TBLT（Long/Willis）：Pre-task（準備）→ Task（執行任務）→ Language focus（聚焦語言形式）。" },
+  { q: "溝通能力（Communicative Competence）包含哪四大面向？（Canale & Swain）", opts: ["語音、詞彙、文法、語用","語法能力、社語能力、語篇能力、策略能力","理解、輸入、輸出、互動","流利度、準確度、複雜度、互動能力"], ans: 1, exp: "四大溝通能力（Canale & Swain）：Grammatical / Sociolinguistic / Discourse / Strategic Competence。" },
+  { q: "CLT 與 TBLT 的主要差異是？", opts: ["CLT 不用真實任務，TBLT 才用","CLT 是廣泛的方法論；TBLT 是以「任務完成」驅動語言使用的具體實現","CLT 適合初學者，TBLT 適合進階","兩者完全相同，只是名稱不同"], ans: 1, exp: "CLT 是廣義的溝通取向方法論；TBLT 是 CLT 的一種具體落實方式，以真實任務的完成作為語言學習的核心驅動力。" },
+  { q: "Desuggestopedia（暗示法）的特色是？", opts: ["強調語法規則的明確教學","用音樂、舒適環境和角色扮演降低心理障礙","學生跟著教師的沉默自主探索","以身體反應為主要學習方式"], ans: 1, exp: "Desuggestopedia（Lozanov）：透過舒適環境、背景音樂、角色扮演來降低學習者的心理防衛，讓輸入更易進入。" },
+  { q: "Lightbown & Spada 提案「Get it right in the end」意指？", opts: ["從一開始就重視準確度","先大量可理解輸入，不管準確度","先以溝通為主，再透過 focus on form 改善準確度","只要能溝通，準確度不重要"], ans: 2, exp: "Get it right in the end：先重視意義溝通，之後再透過 focus on form 聚焦語言形式，兼顧流利與準確。" },
+  { q: "CBI / CLIL 的特色是？", opts: ["純粹教文法不教學科知識","語言學習與學科知識同時習得","以母語教授學科知識","學生必須先達到高級程度才能參與"], ans: 1, exp: "CBI（Content-Based Instruction）/ CLIL（Content and Language Integrated Learning）：語言是學習學科知識的媒介，同時習得語言和內容。" },
+  { q: "Direct Method（直接法）的特色是？", opts: ["大量翻譯練習","完全使用目標語，問答、看圖說話","以文法規則為核心","身體反應為主要學習方式"], ans: 1, exp: "Direct Method：完全使用目標語（L2），透過問答、圖片、朗讀等直接聯繫意義與語言，不用翻譯。" },
+  { q: "CLL（Community Language Learning，社群語言學習法）的核心理念是？", opts: ["以行為強化建立語言習慣","學習者決定想說的內容，教師翻譯後學習者複述，像諮商關係","教師保持沉默讓學生自主發現規則","全身動作反應是核心學習方式"], ans: 1, exp: "CLL（Curran）：以人文主義諮商關係為基礎。學習者用母語說出想說的內容，教師翻譯成 L2，學習者錄音後複述，逐漸建立語言能力。重視學習者的情感和人際關係。" },
+  { q: "ALM 中「Pattern Drill（型式操練）」的目的是？", opts: ["讓學習者創造性地表達個人想法","透過反覆操練句型直至自動化，建立語言習慣","讓學習者自主發現語法規則","培養學習者的批判思考能力"], ans: 1, exp: "Pattern Drill（ALM）：透過大量重複操練（Substitution drill、Transformation drill 等），讓語言形式成為自動化習慣。源自行為主義的 habit formation 理論。" },
+  { q: "Lightbown & Spada 的「Just listen and read（只聽和閱讀）」建議的理論依據是？", opts: ["行為主義；習慣形成需要反覆輸出","Krashen 的輸入假說；大量可理解輸入自然引發習得，不必強制輸出","Chomsky 的 UG；天生語言機制不需要教學","社會文化論；互動比輸入更重要"], ans: 1, exp: "Just listen and read：以 Krashen 的 Input Hypothesis 為依據，主張大量可理解輸入（i+1）就足以引發習得，不必強迫學習者說話或明確教語法。" },
+  { q: "Lightbown & Spada「Get it right from the beginning（從一開始就要求正確）」的支持論點是？", opts: ["錯誤越多越有助於習得","早期允許錯誤會導致化石化，早期強調準確度可預防不良習慣","習得應先於學習，不需要從一開始要求準確","學習者的情感比準確度更重要"], ans: 1, exp: "Get it right from the beginning：早期容許錯誤可能導致化石化（fossilization）。早期就要求準確度，可以防止不正確的語言形式固定下來。但批評者認為這會降低溝通流利度。" },
+  { q: "Lightbown & Spada「Get two for one（一石二鳥）」的意思是？", opts: ["一個活動同時練習兩種文法","語言學習與學科內容同時習得（CLIL/CBI）","一個老師教兩個班","用一種語言教兩種語言能力"], ans: 1, exp: "Get two for one：CBI/CLIL 的概念，透過學科內容教學同時習得語言，讓學習效益加倍——既學了知識，又習得了語言。" },
+  { q: "Lightbown & Spada「Teach what is teachable（教可教的）」的核心概念是？", opts: ["教師應教所有文法點","只教學習者最常用的詞彙","教學應配合習得的自然順序（teachability hypothesis），不強行提早教習得順序後面的結構","只教在考試中出現的語言形式"], ans: 2, exp: "Teach what is teachable（可教性假說 Teachability Hypothesis，Pienemann）：語言結構有習得順序，教學只有在學習者已達到習得順序前一階段時才有效。提前強教尚未準備好習得的結構效果有限。" },
+  { q: "「Information Gap Activity（資訊差距活動）」的設計原理是？", opts: ["兩人共享相同資訊後討論","學生A與學生B各持有對方沒有的資訊，必須溝通交換才能完成任務","教師提供所有資訊，學生回答問題","學生自行創作並分享資訊"], ans: 1, exp: "Information Gap：A 有 B 沒有的資訊，B 有 A 沒有的資訊，雙方必須真實溝通才能完成任務。這是 CLT/TBLT 中產生真實溝通需求的核心機制。" },
+  { q: "CLT 的理論基礎中，Hymes 的「溝通能力（Communicative Competence）」與 Chomsky 的「語言能力（Linguistic Competence）」最大差異是？", opts: ["兩者完全相同","Chomsky 著重知道語言規則的能力；Hymes 強調知道在社會情境中何時、如何恰當使用語言","Hymes 只關注語法；Chomsky 關注溝通","Chomsky 的理論比 Hymes 更適合課堂應用"], ans: 1, exp: "Chomsky 的 Linguistic Competence：知道語言系統規則的抽象能力。Hymes 的 Communicative Competence：不只知道語法，還知道「何時說、對誰說、說什麼才恰當」的社會語言知識。CLT 以 Hymes 的概念為核心。" },
+  { q: "Grammar-Translation Method（GTM）使用母語的方式是？", opts: ["完全不使用母語","用母語作為媒介語進行語法規則解說和翻譯練習","用母語讓學生做角色扮演","只在評量時使用母語"], ans: 1, exp: "GTM：大量使用 L1（母語）作為教學媒介語，進行雙向翻譯（L1→L2、L2→L1）和語法規則的明確解說。不鼓勵口語溝通。" },
+  { q: "TBLT 中「Task（任務）」的定義要素？", opts: ["任何有語言輸入的活動","有意義的目標、以意義為主（meaning-focused）、有真實溝通的缺口（information/reasoning gap）、需要語言才能完成、有可評估的結果","只需學生用英語完成的活動","以語法點為核心目標的練習活動"], ans: 1, exp: "Task（TBLT）定義（Long/Willis）：①有意義的目標 ②以意義為主 ③有 information gap 或 reasoning gap ④主要評量成功完成任務而非語言形式。純語法練習（如填空句型）不算 TBLT 的任務。" },
+  { q: "「Communicative Language Teaching（CLT）」的課堂特色是？", opts: ["大量機械式句型操練","教師主導翻譯練習","以真實溝通任務驅動，學生為中心，鼓勵錯誤中學習","明確講解語法規則後做習題"], ans: 2, exp: "CLT 課堂特色：以真實溝通任務為中心、學生互動為主、教師為引導者而非傳授者、強調流利度（fluency）也重視準確度、容許錯誤作為學習過程。" },
+  { q: "Audio-Lingual Method（ALM）受到哪兩位學者理論的直接影響？", opts: ["Chomsky 和 Hymes","Skinner（行為主義）和 Bloomfield（結構語言學）","Vygotsky 和 Krashen","Long 和 Willis"], ans: 1, exp: "ALM 理論基礎：Skinner 的行為主義（Behaviorism）——語言習得是刺激→反應→強化的習慣形成；Bloomfield 的結構語言學——語言是可分析的結構系統。兩者結合產生以 pattern drill 為核心的教學法。" },
+  { q: "「Scaffolding（鷹架）」在語言教學課堂的具體應用例子是？", opts: ["教師完全不介入，讓學生自學","教師提供圖片、關鍵詞、句框（sentence frames）等支架幫助學生完成超出現有能力的任務","教師告知學生所有錯誤","學生兩人一組，相互評分"], ans: 1, exp: "Scaffolding 課堂應用：提供 sentence frames（句框）、graphic organizers（圖像組織者）、關鍵詞彙、示範例子等暫時性支援，幫助學習者完成 ZPD 內的任務，隨後逐步撤除支援。" },
+],
+
+materials: [
+  { q: "教材評估的「外部評估（External Evaluation）」包含？", opts: ["檢視教材內部的活動設計和語言輸入","看封面、目錄、級數、技能分配、出版目標","實際試用後的教師回饋","學生的語言表現測驗"], ans: 1, exp: "外部評估（External Evaluation）：在使用前透過封面、目錄、級數分類、出版說明、教師手冊等外觀資訊初步判斷。" },
+  { q: "教材改編方式「Deleting（刪減）」的目的是？", opts: ["補充背景知識和學習支架","刪去不適合程度或時間的部分","改變活動順序使輸入→輸出更順暢","調整文本的語言難度"], ans: 1, exp: "Deleting：移除與學習目標不符、程度不適合或時間不足以涵蓋的教材部分。" },
+  { q: "「Semantic Web（語意網）」詞彙活動的最佳使用時機是？", opts: ["課堂結束的形成性評量","引入新主題前的背景激活","作為家庭作業複習","評估學生詞彙測驗成績"], ans: 1, exp: "Semantic Web：以中心詞（如 weather）向外擴展相關詞，適合在引入新主題前激活學生的先備知識。" },
+  { q: "「Odd One Out」詞彙活動的主要目的是？", opts: ["深化詞彙四角（定義/例句/近反義）","找出不同類的詞並解釋理由，複習+批判思考","按類別排列詞彙","記憶配對競賽"], ans: 1, exp: "Odd One Out：在一組詞中找出不屬於同類的詞，並說明理由。結合詞彙複習與批判思考。" },
+  { q: "Bloom's Taxonomy 中，「Evaluate（評鑑）」層次的活動範例是？", opts: ["配對天氣詞與圖片","用自己的話解釋定義","評估 Cool English vs Sensay Clip 工具的優缺點","設計分層任務"], ans: 2, exp: "Evaluate（評鑑）：評估優缺點、選擇最適方案。設計分層任務屬於最高層的 Create（創造）。" },
+  { q: "「Tiered Assignment（分層任務）」的核心概念是？", opts: ["所有學生做相同活動","針對不同程度提供不同難度或產出形式，達成相同學習目標","先讓進階生做，再讓初學者模仿","依照學生的學習風格分組"], ans: 1, exp: "Tiered Assignment：相同學習目標下，提供不同難度、深度或產出形式的任務，讓不同程度學生都能成功達成目標。" },
+  { q: "LISN 教學策略中，N 代表？", opts: ["Narrate（敘述）","Neutralize（客觀評估，給予建設性批評）","Note-taking（筆記）","Negotiate（意義協商）"], ans: 1, exp: "LISN：Look（觀察）/ Inquiry（提問）/ Summarize & Notes（摘要+記錄）/ Neutralize（客觀評估課堂行為，非只給正向回饋）。" },
+  { q: "關於 AI 工具（ChatGPT）在教學中的使用原則，何者最正確？", opts: ["AI 生成的內容完全可信，直接使用","AI 可強化教師原創活動設計，但正確性需教師核查","AI 完全取代教師設計教材的工作","初學者不應使用 AI 工具"], ans: 1, exp: "使用 AI 工具的原則：先有學習目標再選工具；工具服務任務；AI 生成的內容需教師評估、調整程度與適切性。" },
+  { q: "「Four Square」詞彙活動的四個格子包含？", opts: ["讀/寫/聽/說","定義/例句/近義詞或反義詞/圖片","音標/拼字/詞類/例句","詞根/前綴/後綴/衍生詞"], ans: 1, exp: "Four Square：Word（詞）/ Definition（定義）/ Sentence（例句）/ Synonym-Antonym 或圖片，深化詞彙理解。" },
+  { q: "寫作教學的「Before（預寫）」階段主要活動是？", opts: ["初稿撰寫，專注意義","同儕回饋和修改","腦力激盪、圖像組織、主題討論","最終稿繳交"], ans: 2, exp: "寫作三階段：Before（預寫：腦力激盪/圖像組織）→ During（初稿：focus on meaning）→ After（同儕回饋/修改/最終稿）。" },
+  { q: "教材改編方式「Adding（增加）」的目的是？", opts: ["刪去不必要的活動","改變活動的排列順序","補充背景知識、語言支架或額外練習，填補教材空缺","調整文本語言難度"], ans: 2, exp: "Adding：在原教材基礎上補充不足之處，例如增加背景知識、延伸練習、詞彙支援或文化脈絡，以符合學習者需求。" },
+  { q: "教材改編方式「Reordering（重排）」的目的是？", opts: ["刪去不符合程度的內容","添加補充背景知識","調整活動或單元的順序，使教學流程更符合輸入→輸出的邏輯","更換活動的評量方式"], ans: 2, exp: "Reordering：重新排列教材中活動的順序，例如將輸入活動移到輸出活動前，或根據難易度重排，使教學流程更合邏輯。" },
+  { q: "Bloom's Taxonomy 中，「Remember（記憶）」層次的活動範例是？", opts: ["比較兩種教學法的優缺點","用自己的話解釋一個概念","認出或回憶出定義、詞彙配對","設計一個新的課堂活動"], ans: 2, exp: "Remember（記憶）是 Bloom 最低認知層次：辨認、回憶、列舉。例如：配對詞彙與定義、填出作者名字、背誦語音音標符號。" },
+  { q: "Bloom's Taxonomy 中，「Create（創造）」層次的活動範例是？", opts: ["回憶詞彙定義","找出文章主旨","評估兩種工具的優缺點","設計一個分層任務或教學單元"], ans: 3, exp: "Create（創造）是 Bloom 最高認知層次：整合多種知識設計出新的作品或計劃。例如：設計教學活動、創作故事、規劃課程單元。" },
+  { q: "「Word Sorting（詞彙分類）」活動的學習目的是？", opts: ["練習詞彙的發音","透過分類強化語義關係和詞彙概念理解","記憶詞彙的拼字","做詞彙的量化評估"], ans: 1, exp: "Word Sorting：學生根據語義類別（如同義詞/反義詞、詞性、主題）對詞彙進行分類，強化詞彙的概念關係和深層理解，是主動建構詞彙知識的策略。" },
+  { q: "教材評估的「內部評估（Internal Evaluation）」關注什麼？", opts: ["封面、目錄、出版目標等外觀資訊","實際試用後教師和學生的反應","教材內部的活動設計、語言輸入品質、技能整合、學習目標一致性","出版社的市場定位"], ans: 2, exp: "Internal Evaluation：在外部評估後進行，深入檢視教材內容，包含：活動設計是否合理、語言輸入是否可理解、技能整合是否平衡、學習目標是否一致。" },
+  { q: "聽力教學的「During（聆聽中）」階段活動範例是？", opts: ["預測主題、激活背景知識","填寫聽力任務單、回答 While-Listening 題目","討論聆聽主題的個人看法","評估聽力策略的有效性"], ans: 1, exp: "聽力三階段：Pre-Listening（背景激活、預測）→ While-Listening（填任務單、回答問題、辨識資訊）→ Post-Listening（討論、延伸活動）。During 階段聚焦在聆聽同時完成任務。" },
+  { q: "「Skimming（略讀）」與「Scanning（掃描）」的差異是？", opts: ["兩者相同，都是快速閱讀","Skimming：快速掌握文章大意；Scanning：快速找出特定資訊","Skimming 用於精讀，Scanning 用於略讀","Skimming 是閱讀後活動，Scanning 是閱讀前活動"], ans: 1, exp: "Skimming（略讀）：快速閱讀以獲得文章整體大意或架構，不需理解每個詞。Scanning（掃描）：快速瀏覽文本以找出特定資訊（如電話號碼、日期、關鍵詞）。" },
+  { q: "KWL 閱讀策略中，「W」代表什麼？", opts: ["What we already know（已知）","What we WANT to know（想知道的問題）","What we will write（即將撰寫）","What we learned（已學到）"], ans: 1, exp: "KWL：K = What we already Know（已知道的）；W = What we Want to know（想知道的問題）；L = What we Learned（學到的）。W 欄位在閱讀前填寫，幫助設定閱讀目的。" },
+  { q: "Howard Gardner 的多元智能理論中，「肢體動覺智能（Bodily-Kinesthetic Intelligence）」對應的語言教學活動是？", opts: ["音樂律動跟讀","全身反應法（TPR）指令動作、角色扮演、肢體活動","視覺圖表製作","小組討論與辯論"], ans: 1, exp: "Bodily-Kinesthetic Intelligence（肢體動覺）：透過身體動作學習。對應活動：TPR 指令反應、角色扮演、實際操作、手工製作等需要肢體參與的任務。" },
+  { q: "「Exit Cards（出口卡）」在教學中的主要功能是？", opts: ["作為期末總結性評量","課堂結束時學生寫下今天的學習收穫或疑問，教師用以了解學習狀況","作為同儕互評工具","代替傳統的課堂測驗"], ans: 1, exp: "Exit Cards（出口卡）：每堂課結束時，學生用一張卡片寫出：今天學到什麼？還有什麼不確定？教師收集後了解學習成效，調整下節課教學計劃。是常見的形成性評量工具。" },
+  { q: "口說教學的「After（口說後）」階段主要活動是？", opts: ["預告口說任務、激活相關詞彙","正式執行口說任務","同儕評分、反思、延伸討論或書寫回應","設計口說評分規準"], ans: 2, exp: "口說三階段：Pre-Speaking（準備：詞彙激活、示範）→ During Speaking（執行任務：角色扮演、討論）→ After Speaking（反思、同儕回饋、延伸書寫）。After 階段整合反思與延伸。" },
+  { q: "「Sensay Clip」作為語言學習工具，主要功能是？", opts: ["AI 生成教材設計","讓學習者錄音並獲得發音準確度的 AI 即時回饋","線上詞彙測驗平台","自動生成閱讀理解題目"], ans: 1, exp: "Sensay Clip：語音練習工具，學習者錄下口說後，AI 提供發音準確度（pronunciation accuracy）的即時回饋，適合自主練習發音和口說流利度。" },
+  { q: "Bloom's Taxonomy 六個認知層次由低到高的正確順序是？", opts: ["Remember→Apply→Understand→Analyze→Evaluate→Create","Remember→Understand→Apply→Analyze→Evaluate→Create","Understand→Remember→Apply→Evaluate→Analyze→Create","Apply→Understand→Remember→Analyze→Create→Evaluate"], ans: 1, exp: "Bloom's Taxonomy（Anderson & Krathwohl 修訂版）六層次由低到高：①Remember（記憶）②Understand（理解）③Apply（應用）④Analyze（分析）⑤Evaluate（評鑑）⑥Create（創造）。" },
+],
+
+assessment: [
+  { q: "評量五大品質指標中，「Reliability（信度）」是指？", opts: ["測到應測之物","成績的一致性（重測、評分者間一致）","接近真實語言使用情境","測驗對教學與學習的影響"], ans: 1, exp: "Reliability（信度）：評量的一致性，包含重測信度、內部一致性和評分者信度。Validity（效度）才是「測到應測之物」。" },
+  { q: "「Washback（反沖效應）」是指？", opts: ["測驗的難度設計","評量工具的成本效益","測驗對教學與學習行為的反作用影響","評分者之間的一致性"], ans: 2, exp: "Washback：測驗對教學和學習行為的影響。正向反沖：教師教有意義的任務；負向反沖：只教考試技巧（teaching to the test）。" },
+  { q: "「Formative Assessment（形成性評量）」的主要目的是？", opts: ["期末評定學生總成績","在學習過程中提供回饋以調整教學","測量學生的整體語言能力","安置學生進入適合的班級"], ans: 1, exp: "Formative Assessment：在學習過程中使用，目的是提供回饋、調整教學策略。例：exit cards、課堂觀察、同儕回饋。" },
+  { q: "下列哪項屬於「Summative Assessment（總結性評量）」？", opts: ["Exit cards","課堂觀察","同儕回饋","期末考試"], ans: 3, exp: "Summative Assessment：學習結束後評定成績，如期末考、標準化測驗。Formative 是學習過程中的調整性評量。" },
+  { q: "「Portfolio（檔案評量）」的特色是？", opts: ["單次考試決定成績","重視學習歷程、反思與成長，包含學生自評","只評量說話能力","測驗學生記憶語法規則的能力"], ans: 1, exp: "Portfolio（檔案評量）：蒐集學習歷程作品，重視反思與進步，強調學生自評，是替代性評量的代表形式。" },
+  { q: "「Analytic Rubric（分析式評分規準）」的優點是？", opts: ["快速且資訊量充足","分項評分（如內容/組織/語言），診斷性高，適合形成性回饋","只給一個整體分數","不需要訓練評分者"], ans: 1, exp: "Analytic Rubric：分項評分（內容/組織/語言/互動等），診斷性高，適合形成性回饋和寫作/口說細部評估。Holistic 才是整體單一分數。" },
+  { q: "「Proficiency Test（能力測驗）」與「Achievement Test（成就測驗）」的最大差異是？", opts: ["前者只測文法，後者測四技","前者測一般語言能力（不限課程）；後者測課程教過的特定內容","前者用於分班，後者用於期末","前者由國家制定，後者由教師自編"], ans: 1, exp: "Proficiency Test（如 TOEFL/IELTS）：測整體語言能力，不依賴特定課程。Achievement Test：測某課程教授過的內容，如單元考。" },
+  { q: "「Placement Test（安置性測驗）」的用途是？", opts: ["診斷學習弱點","安置學生進入適合程度的班級","評定學期末總成績","測量習得某課程後的成就"], ans: 1, exp: "Placement Test：用於課程開始前，根據程度安置學生進入適合的班級或課程，不是評定成績。" },
+  { q: "好的 Rubric 設計應具備？", opts: ["盡量少分項，以節省評分時間","描述具體可觀察、等級清楚有層次、對應學習目標、學生事先知道標準","只有老師知道標準，避免學生投機取巧","只設優秀和不及格兩個等級"], ans: 1, exp: "好 Rubric：①具體可觀察的描述 ②清楚的等級層次 ③對應學習目標 ④透明度（學生事先知道標準）。" },
+  { q: "「Diagnostic Assessment（診斷性評量）」通常在何時使用？", opts: ["學期結束","每堂課結束","教學前，用來找出學生的弱點","課堂中途調整教學用"], ans: 2, exp: "Diagnostic Assessment：在教學開始前使用，找出學生的語言弱點或先備知識缺口，以利規劃後續教學。" },
+  { q: "測驗品質指標「Discrimination（鑑別力）」的定義是？", opts: ["測驗是否測到應測之物（construct validity）","測驗成績是否一致穩定","測驗能區分高低能力學習者的程度","測驗任務接近真實語言使用的程度"], ans: 2, exp: "Discrimination（鑑別力）：測驗能有效區分高能力者和低能力者。鑑別力高的題目，高能力學習者應答對、低能力學習者應答錯，兩者分數有明顯差距。" },
+  { q: "測驗品質五大指標中，哪一項對應到「consistency（一致性）」這個特質？", opts: ["Validity（效度）","Reliability（信度）","Authenticity（真實性）","Washback（反沖效應）"], ans: 1, exp: "Reliability（信度）對應 consistency（一致性）：包含重測信度（test-retest reliability）、內部一致性（internal consistency）、評分者信度（inter-rater reliability）。" },
+  { q: "「Practicality（實用性）」作為測驗品質指標，考量的是？", opts: ["測驗是否測到應測之物","測驗任務是否接近真實語言使用","施測所需的時間、人力、金錢和易操作程度","測驗對教學和學習的反作用影響"], ans: 2, exp: "Practicality（實用性）：測驗在實際操作上是否可行，包含時間成本、人力需求、金錢花費、評分難易度等。" },
+  { q: "「Content Validity（內容效度）」的定義是？", opts: ["測驗能預測未來語言表現","測驗題目充分代表所欲測量的課程內容或語言能力範圍","評分者之間評分的一致程度","測驗任務接近真實語言使用情境"], ans: 1, exp: "Content Validity（內容效度）：測驗題目是否充分且代表性地涵蓋所欲測量的內容範圍（如課程大綱、語言技能）。如果期末考只考 5% 的教學內容，內容效度就很低。" },
+  { q: "「Construct Validity（建構效度）」的定義是？", opts: ["測驗題目代表課程內容範圍","測驗能測到其聲稱要測量的理論建構（如「閱讀能力」、「口說流利度」）","測驗的施測方便程度","評分者之間的評分一致性"], ans: 1, exp: "Construct Validity（建構效度）：測驗是否真正測到它宣稱要測的抽象能力（construct）。例如，聲稱測「溝通能力」的測驗若只測語法填空，建構效度就有問題。" },
+  { q: "「Holistic Rubric（整體式評分規準）」的特色是？", opts: ["分項評分，診斷性高","給予一個整體分數，快速但診斷資訊少","每個指標都有詳細的行為描述","適合形成性評量的細部回饋"], ans: 1, exp: "Holistic Rubric：評分者根據整體表現給一個單一分數，快速省時，但無法提供細部診斷資訊。相對地，Analytic Rubric 分項評分，診斷性高但耗時。" },
+  { q: "「Self-Assessment（自我評量）」在語言教學的主要好處是？", opts: ["減少教師批改工作量","提升學習者的後設認知意識、自主學習能力和對自身學習的責任感","取代教師評量的功能","提高評量的可靠性和一致性"], ans: 1, exp: "Self-Assessment：讓學習者反思自己的學習歷程和能力，培養後設認知（metacognition）意識、自主學習能力（learner autonomy）和學習責任感。是 Portfolio 評量的核心元素之一。" },
+  { q: "「Inter-rater Reliability（評分者間信度）」是指？", opts: ["同一人不同時間評同一份作品的一致性","兩位以上評分者評同一份作品的一致程度","測驗重測的穩定性","測驗內部各題的一致性"], ans: 1, exp: "Inter-rater Reliability（評分者間信度）：兩位或以上評分者對同一份語言表現（如作文、口說）評分的一致程度。提升方式：訓練評分者、使用清楚的 Analytic Rubric、calibration（校準練習）。" },
+  { q: "「Positive Washback（正向反沖效應）」的例子是？", opts: ["教師只教考試技巧","為了應付語法測驗而反覆操練填空練習","因為口說測驗，教師大量設計真實溝通任務","學生只背誦可能出現的考題"], ans: 2, exp: "Positive Washback：測驗帶動教師採用好的教學方式。如 IELTS 口說考試促使教師設計真實溝通任務；IELTS 寫作考試促使教師教論證組織。負向：只教考試技巧（teaching to the test）。" },
+  { q: "「Performance-based Assessment（表現型評量）」的特色是？", opts: ["以選擇題為主要評量形式","要求學習者展示在真實或模擬情境中的語言使用能力","只評量語法知識","評量者不直接觀察學習者表現"], ans: 1, exp: "Performance-based Assessment：評量學習者在真實或模擬情境中實際使用語言的能力，如口說報告、情境模擬、角色扮演。重視能力展現（demonstrate），而非紙筆知識測試。" },
+  { q: "「Face Validity（表面效度）」的意思是？", opts: ["測驗實際測到了應測之物（經統計驗證）","測驗在表面上看起來像在測它聲稱要測的東西（考生和教師的主觀感受）","測驗與外部標準的相關程度","測驗預測未來表現的能力"], ans: 1, exp: "Face Validity（表面效度）：非統計意義上的效度，而是測驗「看起來」是否合理、相關。若學生覺得測驗和所學無關，可能降低參與動機。雖非科學驗證，但影響測驗的可接受度。" },
+  { q: "「Criterion-referenced（標準參照）」與「Norm-referenced（常模參照）」測驗的差異？", opts: ["前者比較學生間的相對表現；後者設定固定通過標準","前者設定能力標準（如：能做到某任務）判斷是否通過；後者比較學生間相對排名","兩者沒有差異","前者用於大型測驗，後者用於課堂評量"], ans: 1, exp: "Criterion-referenced：以能力標準為參照，判斷學習者是否達到特定能力（如 CEFR B2 可以做到什麼）。Norm-referenced：以同儕群體為參照，比較相對排名（如大學聯考標準化）。" },
+  { q: "「Triangulation（三角驗證）」在評量中的意思是？", opts: ["三位教師共同出題","使用三種以上不同評量方式或資料來源驗證學習者能力的結論","學生、家長、教師三方共同評量","只用三個題目組成的短測驗"], ans: 1, exp: "Triangulation（三角驗證）：使用多種評量工具或資料來源（如測驗 + 觀察 + 作品集）交叉驗證，以提高評量結論的可靠性和效度。避免依賴單一評量工具的偏誤。" },
+  { q: "「Alternative Assessment（替代性評量）」的代表形式是？", opts: ["選擇題標準化測驗","期末紙筆考試","Portfolio（檔案）、Peer Assessment（同儕評量）、Self-Assessment、Performance-based Assessment","詞彙聽寫和翻譯"], ans: 2, exp: "Alternative Assessment：有別於傳統紙筆測驗的評量方式，強調過程和能力展示。代表形式：Portfolio（歷程檔案）、Peer Assessment（同儕評量）、Self-Assessment（自評）、Performance-based Assessment（表現型評量）。" },
+],
+
+curriculum: [
+  { q: "Curriculum（課程）與 Syllabus（大綱）的主要差異是？", opts: ["兩者完全相同","Curriculum 是更大的系統（why/for whom/how/with what/how to evaluate）；Syllabus 是其中內容與排序的規劃","Syllabus 比 Curriculum 更廣泛","Curriculum 只關注內容，Syllabus 關注目標"], ans: 1, exp: "Curriculum 涵蓋需求、目標、內容、教學、評量等整體系統；Syllabus 是 Curriculum 的一部分，回答「教什麼、如何排序」。" },
+  { q: "Needs Analysis（需求分析）在語言課程設計中最主要的目的是？", opts: ["評估教師的教學能力","找出學習者在真實情境中的語言需求和學習需求","測量學生的語法知識","評估教學方法的效果"], ans: 1, exp: "Needs Analysis：識別學習者在目標情境中需要做什麼（target needs）以及需要什麼才能達成目標（learning needs）。" },
+  { q: "課程設計基本循環的第一步是？", opts: ["決定教材和科技工具","確定課程目標（Aims & Outcomes）","情境分析（Context / Situation Analysis）","評估課程成效（Evaluation）"], ans: 2, exp: "課程設計循環：①Context/Situation Analysis → ②Needs Analysis → ③Aims & Outcomes → ④Course Planning → ⑤Materials & Technology → ⑥Evaluation。" },
+  { q: "「Task-based Syllabus（任務型大綱）」的排序依據是？", opts: ["語法結構的難易度","日常情境（餐廳、機場等）","溝通功能（道歉、請求等）","完成真實任務"], ans: 3, exp: "Task-based Syllabus 以任務完成（如訪談、做報告）為排序依據，強調真實任務驅動語言學習。" },
+  { q: "「Spiral Curriculum（螺旋課程）」源自哪位學者？核心概念是？", opts: ["Krashen；自然順序假說","Bruner；核心概念反覆出現，每次加深或轉換情境","Vygotsky；社會文化論","Nation；四大學習線索"], ans: 1, exp: "Spiral Curriculum（Bruner）：核心概念在不同學習階段反覆出現，每次以更深或不同角度重新呈現，逐步加深理解。" },
+  { q: "「Formative Evaluation（形成性評估）」在課程評估中的用途是？", opts: ["課程結束後判斷整體成果","在課程進行中修正調整","理解課程在真實情境如何運作","測量學生的最終語言能力"], ans: 1, exp: "Formative Evaluation：在課程進行中使用，目的是發現問題並即時調整。Summative Evaluation 在課程結束後評估整體成果。" },
+  { q: "「Negotiated Syllabus（協商式大綱）」的優點是？", opts: ["教師可完全控制課程方向","課程內容標準化，易於評量","讓學習者參與大綱協商，強化對課程的承諾感","確保語言內容的系統性覆蓋"], ans: 2, exp: "Negotiated Syllabus：學習者參與課程設計，強化承諾（commitment）和動機。缺點：耗費時間、學習者可能不願協商。" },
+  { q: "「Backward Design（逆向設計）」的起點是？", opts: ["從教材選擇開始","從評量設計開始，再往回規劃教學","從學習目標出發，再規劃教學和評量","從學習者需求分析開始"], ans: 2, exp: "Backward Design：先確定預期成果（desired results）→ 設計評量 → 規劃教學活動。從終點（assessment）往回設計。" },
+  { q: "Nation 的「四大學習線索（Four Strands）」中，Language-focused Learning 包含？", opts: ["閱讀和聽力輸入","口說和寫作輸出","聚焦語言特徵：發音、拼字、詞彙、構詞、語篇特徵","以最快速度流暢使用已知語言"], ans: 2, exp: "Language-focused Learning：刻意聚焦語言形式，如發音練習、詞彙教學、文法說明。流利度（Fluency）才是讓已知語言自動化。" },
+  { q: "下列關於「Needs Analysis」哪項符合評估標準？", opts: ["老師只看特定技能需求","學習需求可聚焦在 necessities（需要）、lacks（缺乏）、wants（想要）三個面向","實用性的需求分析比深入的需求分析更全面","持續需求分析只能用 Likert 量表"], ans: 1, exp: "Needs Analysis 的學習需求（learning needs）可從三面向分析：necessities（必要的）、lacks（欠缺的）、wants（想要的）。" },
+  { q: "「Waterfall Model（瀑布模型）」的課程設計特色是？", opts: ["課程設計跟著即時機會走，不預先計劃","課程設計可多次修訂，逐層加深","在教學前先完整規劃所有課程要素，然後依序執行","課程設計由學習者和教師共同協商"], ans: 2, exp: "Waterfall Model：在教學前完整規劃所有課程要素（syllabus、materials、assessment 等），然後依序執行。適合有充裕時間規劃的教師。" },
+  { q: "「Formative Evaluation」與「Summative Evaluation」的主要差異是？", opts: ["前者評量學生，後者評量教師","前者在課程中調整；後者在課程結束後判斷成果","前者用問卷，後者用考試","兩者目的完全相同，只是時間點不同"], ans: 1, exp: "Formative：課程進行中修正調整（how can we improve?）。Summative：課程結束後判斷整體成果（how well did it work?）。" },
+  { q: "下列關於「Blocks and Threads」的說法何者正確？", opts: ["Blocks 貫穿整個課程；Threads 是獨立完整的教學單元","Threads 貫穿整個課程；Blocks 是可重複使用且有固定格式的獨立單元","兩者都需要繁複的計劃和組織","Blocks 和 Threads 只能分開使用，不能混合"], ans: 1, exp: "Threads：貫穿整個課程的持續活動（如每週日記）。Blocks：獨立完整的教學單元，可重複使用，有固定格式（set format）。" },
+  { q: "「Forward Design（正向設計）」從哪裡開始？", opts: ["從評量設計開始","從學習成果開始","從內容和大綱開始，向前推進到教學和評量","從學習者需求開始"], ans: 2, exp: "Forward Design：從內容/大綱選擇 → 教學法 → 評量。傳統的課程設計模式。Backward Design 是從結果/評量往回設計。" },
+  { q: "關於 workshop（工作坊）目標，以下哪項最符合正確描述？", opts: ["工作坊主要是讓教師記憶新知識","讓教師既作為學習者也作為教師來體驗某項技巧，並反思該體驗，是讓技巧成為教學一部分的重要方式","工作坊應提供學習者已熟悉的資訊以促進討論","獨立工作所能獲得的學習體驗與工作坊相同"], ans: 1, exp: "Workshop goal：讓教師以 learner AND teacher 的角色體驗技巧，並從中反思，才能真正將技巧內化成教學的一部分。" },
+  { q: "「Needs Analysis（需求分析）」目標的最佳描述是？", opts: ["只需分析教材難易度","只需評估教師的教學能力","包含找出學習者的訓練缺口（training gap）和為不同學習風格設計課程等多項目標","只有識別目標語言技能一項目標"], ans: 2, exp: "Needs analysis 目標多元：識別目標需求、學習需求、找出訓練缺口（training gap）、了解學習者偏好、規劃適合不同學習風格的課程內容。" },
+  { q: "課程「Evaluation（評估）」的焦點應包含？", opts: ["只看課程計劃和執行流程","只評估大型測驗的成績","了解學生從課程中學到什麼、如何參與、以及對課程的看法","只評估教師的教學哲學是否一致"], ans: 2, exp: "課程評估的焦點：①學生從課程學到什麼（learning outcomes）②如何參與課程活動 ③對課程內容和方法的看法與感受。" },
+  { q: "「Skill-based Syllabus（技能型大綱）」的核心排序依據是？", opts: ["語法結構的難易度","日常生活情境","聽說讀寫等語言技能的發展","功能性溝通目標"], ans: 2, exp: "Skill-based Syllabus：以語言技能（listening, speaking, reading, writing 或學術技能）為排序依據，技能整合。可能忽略系統性語法教學是其缺點。" },
+  { q: "關於「Authentic Materials（真實教材）」，下列何者正確？", opts: ["能減輕教師備課負擔","讓學習者接觸到真實語境中的語言使用","圍繞分級大綱設計","能自動符合所有學生的程度"], ans: 1, exp: "Authentic Materials：取自真實語言情境（報紙、廣播、影片等），讓學習者接觸到真實的語言使用方式，提升學習真實性。缺點是可能超出學習者現有程度。" },
+  { q: "「Competency-based Syllabus（能力本位大綱）」的特色是？", opts: ["以文法結構為排序中心","以內容課程的語言能力目標作為大綱的出發點","以高頻詞彙和語塊為核心","以任務完成為語言學習驅動力"], ans: 1, exp: "Competency-based Syllabus：以學習者在特定情境中需具備的語言能力（language competency）作為大綱設計的起點，聚焦特定內容領域所需的語言技能。" },
+  { q: "根據 Cunningsworth（1984），評估教科書最重要的標準是？", opts: ["著重語法和詞彙練習","對應學習者的需求（corresponding to learners' needs）","取代課堂科技工具","成為課程最主要的組成元素"], ans: 1, exp: "Cunningsworth（1984）教科書評估標準：首要是「對應學習者的需求」，包含學習目標、語言程度、課程脈絡等，而非只強調語法或詞彙練習。" },
+  { q: "「Task-based syllabus」與「Text-based syllabus」的差異是？", opts: ["任務型強調語法；文本型強調溝通","任務型以學生為中心；文本型消除教師介入","任務型使用教學任務和真實世界任務；文本型以文本作為核心教學單位","任務型只適合書寫活動；文本型符合學習者需求"], ans: 2, exp: "Task-based syllabus：使用 pedagogical tasks（教學任務）和 real-world tasks（真實任務）驅動語言學習。Text-based syllabus：以 texts（文本）作為課程的核心教學單位，組織語言學習內容。" },
+  { q: "根據 Richards（2017），科技對學生提供的新機會是？", opts: ["完全取代傳統教學和面對面互動","在課堂有限時間之外提供更大量接觸英語的機會","讓學生完全依賴科技學習","學生可以更頻繁與母語者互動"], ans: 1, exp: "Richards（2017）：Technology 提供 greater exposure to English——讓學習者在課堂時間以外大量接觸英語，超越課堂的時間限制。" },
+  { q: "「Syllabus Strands（大綱線索）」的特色是？", opts: ["只有一條主線索，不分層次","大綱反映巨觀和微觀兩個層次的組織（macro- and micro-levels）","所有大綱類型的線索都完全相同","線索指的是課程的時間排序方式"], ans: 1, exp: "Syllabus strands（大綱線索）：大綱在組織上反映巨觀層次（macro-level，如主題、單元）和微觀層次（micro-level，如特定語法點、詞彙項目）的設計。" },
+  { q: "「A Functional Syllabus」與「A Situational Syllabus」的關鍵差異是？", opts: ["功能型提供整體課程規劃的宏觀框架；情境型提供方便計劃的框架","功能型著重語言功能（如道歉、請求）；情境型著重特定情境所需的語言","功能型以語言形式組織；情境型以技能組織","功能型適合初學者；情境型適合進階者"], ans: 1, exp: "Functional syllabus：以溝通功能（如道歉、請求、建議）為排序依據。Situational syllabus：以日常情境（如餐廳、機場、醫院）為排序依據，組織該情境中所需的語言。" },
+],
+
+western_lit: [
+  { q: "Zeus（宙斯）/ Jupiter 是掌管什麼的神？", opts: ["海洋與地震","收穫與農業","眾神之王；天空、雷電、法律、秩序與正義","愛情與美麗"], ans: 2, exp: "Zeus/Jupiter：King of the gods；掌管天空、雷電、雷鳴、法律、秩序與正義。象徵物：雷霆、鷹、橡樹。" },
+  { q: "Hera（赫拉）/ Juno 掌管什麼？", opts: ["智慧與工藝","婚姻、女性、分娩與家庭","狩獵與月亮","農業與豐收"], ans: 1, exp: "Hera/Juno：Queen of the gods；掌管婚姻、女性、分娩與家庭。是 Zeus 的妻子。象徵物：孔雀、杜鵑、牛。" },
+  { q: "Poseidon（波塞頓）/ Neptune 是掌管什麼的神？", opts: ["火焰與鍛造","光明與詩歌","海洋、水、風暴、地震與馬","信使與旅行"], ans: 2, exp: "Poseidon/Neptune：掌管海洋、水、風暴、颶風、地震與馬。象徵物：三叉戟、馬、牛、海豚。" },
+  { q: "Demeter（狄蜜特）/ Ceres 掌管什麼？", opts: ["戰爭與暴力","收穫、農業、豐收、自然與四季","智慧與工藝","愛情與慾望"], ans: 1, exp: "Demeter/Ceres：掌管收穫、農業、豐收、自然與四季。象徵物：罌粟花、小麥、火炬、豐饒角。" },
+  { q: "Athena（雅典娜）/ Minerva 掌管什麼？", opts: ["愛情、美麗與慾望","光明與藝術","智慧、工藝與戰爭","狩獵與月亮"], ans: 2, exp: "Athena/Minerva：掌管智慧、工藝與戰爭（理性的戰爭策略，有別於 Ares 的暴力）。象徵物：貓頭鷹、橄欖樹。" },
+  { q: "Apollo 掌管哪些領域？", opts: ["海洋、地震與馬","光明、太陽、預言、詩歌、音樂、藝術、醫療與弓箭","婚姻、分娩與家庭","信使、商業與盜賊"], ans: 1, exp: "Apollo/Apollo：掌管光明、太陽、預言（神諭）、哲學、弓箭、音樂、藝術、美、醫療與瘟疫。象徵物：太陽、弓箭、豎琴、天鵝。" },
+  { q: "Artemis（阿提密斯）/ Diana 是掌管什麼的女神？", opts: ["愛情與生育","收穫與農業","狩獵、荒野、月亮、弓箭與分娩","智慧與工藝"], ans: 2, exp: "Artemis/Diana：掌管狩獵、荒野、童貞、月亮、弓箭、分娩與瘟疫。是 Apollo 的雙胞胎妹妹。象徵物：月亮、弓箭、鹿、獵犬。" },
+  { q: "Ares（阿瑞斯）/ Mars 掌管什麼？", opts: ["愛情與美麗","戰爭、暴力、流血與男子氣概","海洋與地震","火焰與鍛造"], ans: 1, exp: "Ares/Mars：掌管戰爭、暴力、流血與男子氣概（非理性、殘酷的戰爭）。Mars 這個名字衍生出英文 'martial'（軍事的）。" },
+  { q: "Aphrodite（阿芙蘿黛蒂）/ Venus 掌管什麼？", opts: ["智慧與工藝","狩獵與月亮","愛情、愉悅、激情、美麗與慾望","信使與旅行"], ans: 2, exp: "Aphrodite/Venus：掌管愛情、愉悅、激情、生育、美麗與慾望。Venus 衍生出 'venereal'，Aphrodite 衍生出 'aphrodisiac'。" },
+  { q: "Hephaestus（赫菲斯托斯）/ Vulcan 掌管什麼？", opts: ["戰爭與男子氣概","信使與旅行","眾神的神匠；火焰、鍛造、工藝、發明與火山","收穫與四季"], ans: 2, exp: "Hephaestus/Vulcan：眾神的神匠，掌管火焰、鍛造、工藝、發明與火山。Vulcan 衍生出 'volcano'。象徵物：火、鐵砧、錘子。" },
+  { q: "Hermes（赫耳墨斯）/ Mercury 掌管什麼？", opts: ["戰爭與暴力","眾神的信使；旅行、商業、溝通、盜賊與遊戲，也是亡靈嚮導","農業與豐收","火焰與鍛造"], ans: 1, exp: "Hermes/Mercury：眾神信使，掌管旅行、商業、溝通、邊界、口才、盜賊與遊戲，也引導亡魂。象徵物：帶蛇杖（caduceus）、有翼涼鞋。" },
+  { q: "Dionysus（戴奧尼索斯）/ Bacchus 掌管什麼？", opts: ["海洋與地震","月亮與狩獵","葡萄酒、生育、歡慶、狂喜與劇場藝術","家庭與壁爐之火"], ans: 2, exp: "Dionysus/Bacchus：掌管葡萄酒、葡萄藤、生育、歡慶、狂喜、瘋狂與復活，也是劇場藝術的守護神。" },
+  { q: "希臘神話中，「caduceus（帶蛇杖）」是哪位神祇的象徵物？", opts: ["Apollo","Ares / Mars","Hermes / Mercury","Hephaestus / Vulcan"], ans: 2, exp: "Caduceus（帶蛇杖）是 Hermes/Mercury 的象徵物——兩條蛇纏繞的有翼手杖。Hermes 是眾神信使，掌管旅行、商業與溝通。（注意：常與醫療的 Asclepius 之杖混淆，後者只有一條蛇。）" },
+  { q: "英文詞彙「aphrodisiac（春藥、催情劑）」源自哪位希臘神祇？", opts: ["Artemis","Hera","Athena","Aphrodite"], ans: 3, exp: "Aphrodisiac（催情劑）源自 Aphrodite（阿芙蘿黛蒂），愛情與慾望女神。許多現代英文詞彙源自希臘羅馬神話神名，如 volcano（Vulcan）、martial（Mars）、cereal（Ceres）。" },
+  { q: "英文詞彙「volcano（火山）」源自哪位羅馬神祇？", opts: ["Jupiter","Neptune","Vulcan（Hephaestus）","Mars"], ans: 2, exp: "Volcano 源自羅馬神 Vulcan（即希臘的 Hephaestus），鍛造與火焰之神。古羅馬人認為火山的噴發是 Vulcan 在鍛造工作時的火焰和煙霧。" },
+  { q: "英文詞彙「martial（軍事的）」源自哪位羅馬神祇？", opts: ["Jupiter","Mars（Ares）","Mercury","Saturn"], ans: 1, exp: "Martial（軍事的、好戰的）源自羅馬戰神 Mars（希臘的 Ares）。相關詞彙：martial arts（武術）、court-martial（軍事法庭）、Mars 星球命名也來自此戰神。" },
+  { q: "下列哪位神祇掌管「智慧、工藝與戰爭策略」，且其象徵動物是貓頭鷹？", opts: ["Hera / Juno","Artemis / Diana","Athena / Minerva","Demeter / Ceres"], ans: 2, exp: "Athena/Minerva：智慧女神，也是工藝和戰爭策略（理性戰爭，有別於 Ares 的暴力）的守護神。象徵物：貓頭鷹（代表智慧）、橄欖樹、盾牌 Aegis。雅典城即以她命名。" },
+],
+
+british_lit: [
+  { q: "《Beowulf》是哪個時期的英國文學作品？其主要主題是？", opts: ["文藝復興；人文主義與個人尊嚴","維多利亞；社會不平等","中世紀；英雄主義、命運、善惡對立","現代主義；意識流"], ans: 2, exp: "Beowulf 是盎格魯薩克遜時期（中世紀）的史詩，主題：英雄主義、命運、善惡對立。是英國文學最重要的早期作品之一。" },
+  { q: "Geoffrey Chaucer 的《The Canterbury Tales》以什麼敘事特色著稱？", opts: ["意識流內心獨白","多元敘事框架、描繪各階層角色、社會諷刺","象徵主義與超自然","單一英雄的史詩冒險"], ans: 1, exp: "《坎特伯里故事集》以朝聖者框架（frame narrative）呈現多元角色和故事，反映中世紀英國各階層社會，充滿諷刺意味。" },
+  { q: "莎士比亞四大悲劇中，《Macbeth》的主要主題是？", opts: ["猶豫不決與報復","嫉妒與操縱","野心（ambition）與其悲劇後果","衰老與子女的背叛"], ans: 2, exp: "Macbeth：野心是核心主題，Macbeth 的 hamartia（悲劇缺陷）就是無盡的野心（vaulting ambition）。" },
+  { q: "《Hamlet》中 Hamlet 的 hamartia（悲劇缺陷）是什麼？", opts: ["嫉妒","過度的野心","猶豫不決（indecision）","傲慢"], ans: 2, exp: "Hamlet 的悲劇缺陷：猶豫不決（indecision）。他知道應該為父報仇，卻一再延遲行動，導致悲劇。" },
+  { q: "John Milton 的《Paradise Lost》描述什麼？其中撒旦的著名台詞是？", opts: ["Arthur 王的傳奇；「一切為了榮耀」","人類的墮落與救贖史詩；「Better to reign in Hell than serve in Heaven」","《聖經》中的預言；「罪惡是人的本性」","天堂的創世；「神的旨意不可置疑」"], ans: 1, exp: "《Paradise Lost》：史詩，描述人類的墮落（亞當夏娃被逐出伊甸園）與救贖。撒旦的名言：Better to reign in Hell than serve in Heaven。" },
+  { q: "Jonathan Swift 的《Gulliver's Travels》主要是在諷刺什麼？", opts: ["浪漫主義詩歌的矯情","宗教改革的失敗","人性、政治腐敗與戰爭","工業革命的負面影響"], ans: 2, exp: "Gulliver's Travels（Swift）：政治諷刺文學，批判人性的傲慢、政治制度的荒謬和戰爭的荒唐。" },
+  { q: "浪漫主義時期（1785–1830）代表詩人 William Blake 的著名詩集是？主題為何？", opts: ["The Waste Land；現代文明的崩潰","Songs of Innocence & Experience；天真與墮落、社會批判","Ode to a Nightingale；美麗與死亡","The Prelude；自然、記憶與成長"], ans: 1, exp: "Blake：Songs of Innocence & Experience 對比天真（童年、自然）與墮落（社會腐化、工業化），批判社會不公。" },
+  { q: "John Keats 的《Ode to a Nightingale》與《Ode on a Grecian Urn》共同主題是？", opts: ["革命精神與自然力量","美麗、死亡、永恆與短暫","意識流與內心世界","後殖民主義與文化身分"], ans: 1, exp: "Keats 的頌詩（Odes）：探討美麗（beauty）、死亡（death）、永恆（immortality）與短暫（transience）的對比張力。" },
+  { q: "Virginia Woolf 的小說技法特色是？", opts: ["客觀寫實，詳細描繪社會環境","意識流（Stream of Consciousness）；探索內心時間、女性身份","傳統史詩結構，英雄旅程","後設小說，故事意識到自身是小說"], ans: 1, exp: "Woolf（Mrs. Dalloway、To the Lighthouse）：意識流技法，呈現內心思緒的流動，探索時間感知、女性身份與內心生活。" },
+  { q: "James Joyce 在《Dubliners》中的核心技法「epiphany」是指？", opts: ["誇張的英雄主義描寫","人物突然的洞察或覺悟的瞬間","超自然恐懼的哥德元素","大量古典神話典故的引用"], ans: 1, exp: "Epiphany（頓悟）：Joyce 獨特的技法，指人物在平凡時刻突然的洞察或頓悟，是 Dubliners 各篇的核心結構。" },
+  { q: "T.S. Eliot 的《The Waste Land》的主要主題是？", opts: ["浪漫愛情與自然崇拜","工業化與童工問題","現代文明的崩潰、精神的破碎感、大量神話典故引用","愛爾蘭民族主義與神秘主義"], ans: 2, exp: "The Waste Land（Eliot）：描繪一戰後現代文明的精神廢墟，充滿碎片感、多語言引用、神話典故，是現代主義詩歌的代表。" },
+  { q: "「Byronic Hero（拜倫式英雄）」的特徵是？", opts: ["純潔善良、為他人犧牲的傳統英雄","孤傲、神秘、反傳統、有缺陷、帶有自我流亡色彩","熱愛自然、追求精神純潔","服從社會規範、遵從宗教教義"], ans: 1, exp: "Byronic Hero：孤傲、神秘、反傳統社會規範、有缺陷（flawed）、帶有自我流亡色彩的英雄形象。源自 Byron 自身的生活和作品。" },
+  { q: "Charles Dickens 的作品主要反映什麼社會主題？", opts: ["浪漫主義的自然崇拜","工業化社會的不平等、童年苦難","宗教改革與知識分子","愛爾蘭獨立運動"], ans: 1, exp: "Dickens（Oliver Twist、Great Expectations）：揭露維多利亞時期工業化社會的不平等、童年剝削、貧富差距等社會問題。" },
+  { q: "Oscar Wilde 的《The Importance of Being Earnest》以何著稱？", opts: ["嚴肅的道德教化","機智的語言、諷刺貴族社會虛偽的喜劇","意識流內心獨白","哥德恐怖元素"], ans: 1, exp: "Wilde 的作品以機智幽默（wit）、悖論（paradox）和語言遊戲著稱，《正式的重要性》諷刺維多利亞貴族的虛偽道德。" },
+  { q: "現代主義時期（Modernism）的共同文學特色是？", opts: ["英雄主義、命運、善惡對立","意識流、碎片感、實驗性形式、對傳統的質疑","自然崇拜、個人情感、超自然元素","現實主義描繪、詳細的社會背景"], ans: 1, exp: "Modernism（1900-1945）：意識流、時間碎片、實驗性敘事形式、對現代文明的批判，代表作家：Woolf、Joyce、Eliot、Yeats。" },
+  { q: "Wordsworth 的詩「I wander lonely as a cloud」（Daffodils）描述了什麼？", opts: ["對死亡和永恆的沉思","詩人孤獨漫步時遇見大片水仙花，後來在獨處沉思中回憶起那份歡愉","工業化社會對自然的破壞","對失去友人的哀悼與懷念"], ans: 1, exp: "「Daffodils / I wander lonely as a cloud」（Wordsworth）：詩人孤獨漫遊時偶遇大片水仙花田，留下深刻印象；後來在空閒沉思（「vacant or in pensive mood」）時，那景象重現腦海，心靈因此充盈喜悅。體現浪漫主義對自然和記憶的重視。" },
+  { q: "Wordsworth 的《Preface to Lyrical Ballads》（1800）主要主張什麼？", opts: ["哥德文學的恐怖美學和超自然敘事","現代主義詩歌應破碎、實驗、反傳統","詩歌是『強烈情感的自然流溢（spontaneous overflow of powerful feelings）』，應使用普通人的日常語言","維多利亞時期的社會寫實主義與道德說教"], ans: 2, exp: "《Preface to Lyrical Ballads》：浪漫主義詩歌的理論宣言。Wordsworth 主張詩是「the spontaneous overflow of powerful feelings」，語言應貼近普通人（common man），拒絕 18 世紀矯飾的詩歌語言。是浪漫主義運動的重要文學理論文件。" },
+  { q: "William Wordsworth 屬於哪個文學時期？其代表主題為何？", opts: ["現代主義；意識流和城市疏離感","浪漫主義（1785–1830）；自然、記憶、童年、個人情感與成長","維多利亞時期；社會不平等和工業化批判","新古典主義；理性、秩序與政治諷刺"], ans: 1, exp: "Wordsworth 是浪漫主義（Romanticism）的重要詩人，主題圍繞自然的力量、童年記憶（The Prelude）、個人情感和心靈成長（Tintern Abbey、Daffodils）。" },
+  { q: "浪漫主義時期六大代表詩人中，誰的作品以「革命精神、自然力量、權力的虛無」為主題？其代表作是？", opts: ["Keats；Ode to a Nightingale","Coleridge；The Rime of the Ancient Mariner","Shelley；Ode to the West Wind 和 Ozymandias","Byron；Don Juan"], ans: 2, exp: "P.B. Shelley：Ode to the West Wind（自然力量、革命）、Ozymandias（權力的虛無與必然崩潰）。Keats 主題是美與死亡；Coleridge 是超自然與罪惡；Byron 是浪漫英雄。" },
+  { q: "莎士比亞《Othello》中，Othello 的 hamartia（悲劇缺陷）是什麼？", opts: ["野心（vaulting ambition）","猶豫不決（indecision）","嫉妒（jealousy）","傲慢（hubris）"], ans: 2, exp: "Othello 的 hamartia：嫉妒（jealousy）。Iago 操縱 Othello 的嫉妒，使他懷疑妻子 Desdemona 的忠貞，最終導致悲劇。嫉妒也是全劇的核心主題。（比較：Macbeth = 野心；Hamlet = 猶豫不決）" },
+  { q: "《King Lear》的主要主題是？", opts: ["野心與背叛","嫉妒與種族歧視","衰老、家庭背叛、權力分割與瘋狂","殖民主義與身份認同"], ans: 2, exp: "King Lear：年老的 Lear 分割王國給女兒，卻遭兩個女兒背叛，最終精神崩潰。主題：衰老與無力感、家庭忠誠vs.背叛、權力的幻象、瘋狂中的洞見。" },
+  { q: "D.H. Lawrence 的小說主要探索哪些主題？", opts: ["哥德恐怖與超自然","意識流與都市孤獨","工業化對人性的壓抑、情慾解放與自然對比工業文明","維多利亞社會的諷刺與道德虛偽"], ans: 2, exp: "D.H. Lawrence（Sons and Lovers、Lady Chatterley's Lover）：批判工業化對人類本能與情感的壓抑，探索情慾、自然生命力與階級衝突。作品常以礦區工人社區為背景。" },
+  { q: "Edmund Spenser 的《The Faerie Queene》是什麼類型的作品？其主要特色是？", opts: ["維多利亞現實主義小說，社會批判","現代主義詩集，意識流技法","文藝復興史詩；寓言（allegory）形式，歌頌伊莉莎白女王，呈現基督徒美德","哥德小說，超自然恐懼"], ans: 2, exp: "The Faerie Queene（Spenser，文藝復興）：史詩寓言（allegory），各騎士代表不同美德（如 Holiness、Temperance），Gloriana 象徵伊莉莎白一世女王。以 Spenserian Sonnet 形式聞名。" },
+  { q: "W.B. Yeats 的詩作主要呈現哪些主題？", opts: ["維多利亞社會批判與童工問題","意識流與都市疏離","愛爾蘭民族主義、神秘主義、凱爾特神話與對逝去美麗的哀嘆","科學理性與工業化的讚揚"], ans: 2, exp: "Yeats（The Second Coming、Sailing to Byzantium）：愛爾蘭民族主義、凱爾特神話與民間傳說、神秘主義（occultism）、對美麗與青春消逝的哀嘆、歷史循環的玄學觀。是現代主義詩歌的重要人物。" },
+  { q: "John Donne 屬於哪個文學流派？其詩作的主要特色是？", opts: ["浪漫主義；自然崇拜與個人情感","形上詩（Metaphysical Poetry）；機智（wit）、悖論（paradox）、奇異比喻（conceit）","現代主義；意識流與碎片感","哥德文學；超自然與黑暗氛圍"], ans: 1, exp: "John Donne 是形上詩（Metaphysical Poetry）代表詩人。特色：大量 conceit（奇異隱喻，如把愛人比作圓規）、悖論（paradox）、機智（wit）、結合理性論證與強烈情感。代表作：《No Man Is an Island》、《A Valediction: Forbidding Mourning》。" },
+],
+};
+
+// ── App State ──
+let currentSubject = null;
+let questions = [];
+let current = 0;
+let score = 0;
+let answered = false;
+let sessionWrong = [];
+let isReviewMode = false;
+let isComprehensive = false;
+let isSearchMode = false;
+let answerLog = [];
+let sessionSaved = false;
+let feedbackTiming = "immediate";
+const SETTINGS_KEY = "quizSettingsV2";
+const STATS_KEY = "quizStatsV2";
+
+// ── Index / Settings / Stats ──
+const SEARCH_INDEX = SUBJECTS.flatMap(s => (QUESTIONS[s.id] || []).map((q, idx) => ({
+  ...q,
+  _subject: s.name,
+  _subjectId: s.id,
+  _index: `${s.id}-${idx}`,
+})));
+
+let _mem = [];
+let _statsMem = null;
+
+function subjectByName(name) {
+  return SUBJECTS.find(s => s.name === name) || SUBJECTS.find(s => name && name.includes(s.name));
+}
+
+function loadSettings() {
+  try {
+    return { theme: "light", feedbackTiming: "immediate", ...JSON.parse(localStorage.getItem(SETTINGS_KEY) || "{}") };
+  } catch(e) {
+    return { theme: "light", feedbackTiming: "immediate" };
+  }
+}
+
+function saveSettings(next) {
+  const settings = { ...loadSettings(), ...next };
+  feedbackTiming = settings.feedbackTiming || "immediate";
+  document.body.classList.toggle("dark", settings.theme === "dark");
+  try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings)); } catch(e) {}
+}
+
+function toggleTheme() {
+  const settings = loadSettings();
+  saveSettings({ theme: settings.theme === "dark" ? "light" : "dark" });
+  renderMenu();
+}
+
+function toggleFeedbackMode() {
+  const settings = loadSettings();
+  saveSettings({ feedbackTiming: settings.feedbackTiming === "end" ? "immediate" : "end" });
+  renderMenu();
+}
+
+function loadStats() {
+  if (_statsMem) return _statsMem;
+  try {
+    _statsMem = JSON.parse(localStorage.getItem(STATS_KEY) || "{}");
+  } catch(e) {
+    _statsMem = {};
+  }
+  _statsMem = { sessions: 0, answered: 0, correct: 0, lastScore: null, perSubject: {}, ..._statsMem };
+  return _statsMem;
+}
+
+function saveStats(stats) {
+  _statsMem = stats;
+  try { localStorage.setItem(STATS_KEY, JSON.stringify(stats)); } catch(e) {}
+}
+
+function recordSessionStats() {
+  if (sessionSaved) return;
+  sessionSaved = true;
+  const stats = loadStats();
+  stats.sessions += 1;
+  stats.answered += answerLog.length;
+  stats.correct += answerLog.filter(x => x.correct).length;
+  stats.lastScore = {
+    label: currentSubject.name,
+    score,
+    total: questions.length,
+    pct: Math.round((score / questions.length) * 100),
+    at: new Date().toLocaleString("zh-TW"),
+  };
+  answerLog.forEach(item => {
+    const id = item.subjectId || "mixed";
+    if (!stats.perSubject[id]) {
+      const subject = SUBJECTS.find(s => s.id === id);
+      stats.perSubject[id] = { name: subject?.name || item.subjectName || "其他", answered: 0, correct: 0 };
+    }
+    stats.perSubject[id].answered += 1;
+    if (item.correct) stats.perSubject[id].correct += 1;
+  });
+  saveStats(stats);
+}
+
+function getWeakestSubject(stats = loadStats()) {
+  const rows = Object.values(stats.perSubject || {}).filter(x => x.answered >= 3);
+  if (!rows.length) return null;
+  return rows.sort((a, b) => (a.correct / a.answered) - (b.correct / b.answered))[0];
+}
+
+function loadWrong() {
+  try {
+    const raw = localStorage.getItem("wq");
+    if (raw) {
+      const parsed = JSON.parse(raw).map(item => {
+        const subject = SUBJECTS.find(s => s.id === item._subjectId) || subjectByName(item._subject);
+        return {
+          ...item,
+          _subject: item._subject || subject?.name || "未分類",
+          _subjectId: item._subjectId || subject?.id || "unknown",
+          wrongCount: item.wrongCount || 1,
+          mastered: Boolean(item.mastered),
+        };
+      });
+      _mem = parsed;
+      return parsed;
+    }
+  } catch(e) {}
+  return _mem;
+}
+function saveWrong(arr) {
+  _mem = arr;
+  try { localStorage.setItem("wq", JSON.stringify(arr)); } catch(e) {}
+}
+function addWrong(q, subjectName) {
+  const stored = loadWrong();
+  const subject = SUBJECTS.find(s => s.id === q._subjectId) || subjectByName(subjectName) || currentSubject || {};
+  const found = stored.find(x => x.q === q.q);
+  if (found) {
+    found.wrongCount = (found.wrongCount || 1) + 1;
+    found.mastered = false;
+  } else {
+    stored.push({
+      q: q.q,
+      opts: q.opts,
+      ans: q.ans,
+      exp: q.exp,
+      _subject: subjectName || subject.name || "未分類",
+      _subjectId: q._subjectId || subject.id || "unknown",
+      wrongCount: 1,
+      mastered: false,
+    });
+  }
+  saveWrong(stored);
+}
+function removeFromWrong(q) {
+  const stored = loadWrong().filter(x => x.q !== q.q);
+  saveWrong(stored);
+}
+function activeWrong(subjectId = null) {
+  return loadWrong().filter(x => !x.mastered && (!subjectId || x._subjectId === subjectId));
+}
+function markMastered(qText) {
+  const stored = loadWrong();
+  const found = stored.find(x => x.q === qText);
+  if (found) found.mastered = true;
+  saveWrong(stored);
+  renderMenu();
+}
+function markMasteredByMenuIndex(index) {
+  const item = window._menuWrong?.[index];
+  if (!item) return;
+  markMastered(item.q);
+}
+function clearAllWrong() {
+  _mem = [];
+  try { localStorage.removeItem("wq"); } catch(e) {}
+}
+
+// ── Render ──
+function renderMenu() {
+  document.body.classList.remove("quiz-active");
+  const app = document.getElementById("app");
+  const wrongList = activeWrong();
+  const wrongCount = wrongList.length;
+  const totalQuestions = Object.values(QUESTIONS).reduce((sum, list) => sum + list.length, 0);
+  const settings = loadSettings();
+  const stats = loadStats();
+  const accuracy = stats.answered ? Math.round((stats.correct / stats.answered) * 100) : 0;
+  const weakest = getWeakestSubject(stats);
+  const wrongBySubject = SUBJECTS.map(s => ({
+    ...s,
+    count: wrongList.filter(w => w._subjectId === s.id).length,
+    maxWrong: Math.max(0, ...wrongList.filter(w => w._subjectId === s.id).map(w => w.wrongCount || 1)),
+  })).filter(s => s.count > 0);
+  window._menuWrong = wrongList;
+
+  app.innerHTML = `
+    <div class="menu-header">
+      <div class="menu-kicker">畢業考衝刺練習</div>
+      <h1>英語教育系互動測驗</h1>
+      <p>把各科重點變成可以立刻練的題庫。先選一科暖身，也可以直接進入全科綜合測驗。</p>
+      <div class="menu-stats">
+        <span class="stat-pill">9 科目</span>
+        <span class="stat-pill">${totalQuestions} 題題庫</span>
+        <span class="stat-pill">${wrongCount > 0 ? `${wrongCount} 題錯題待複習` : '錯題本目前清空'}</span>
+      </div>
+      <div class="top-actions">
+        <button class="mode-btn" onclick="toggleFeedbackMode()">詳解模式：${settings.feedbackTiming === "end" ? "結束後統一看" : "答完立即看"}</button>
+        <button class="mode-btn" onclick="toggleTheme()">${settings.theme === "dark" ? "切換淺色模式" : "切換深色模式"}</button>
+      </div>
+    </div>
+
+    <div class="dashboard-grid">
+      <div class="dash-card">
+        <div class="dash-label">練習次數</div>
+        <div class="dash-value">${stats.sessions}</div>
+        <div class="dash-note">完成測驗才會累計</div>
+      </div>
+      <div class="dash-card">
+        <div class="dash-label">總正確率</div>
+        <div class="dash-value">${stats.answered ? `${accuracy}%` : "—"}</div>
+        <div class="dash-note">${stats.answered} 題作答紀錄</div>
+      </div>
+      <div class="dash-card">
+        <div class="dash-label">最近一次</div>
+        <div class="dash-value">${stats.lastScore ? `${stats.lastScore.pct}%` : "—"}</div>
+        <div class="dash-note">${stats.lastScore ? stats.lastScore.label : "還沒有紀錄"}</div>
+      </div>
+      <div class="dash-card">
+        <div class="dash-label">最弱科目</div>
+        <div class="dash-value">${weakest ? `${Math.round((weakest.correct / weakest.answered) * 100)}%` : "—"}</div>
+        <div class="dash-note">${weakest ? weakest.name : "至少每科答 3 題後顯示"}</div>
+      </div>
+    </div>
+
+    <div class="tools-grid">
+      <div class="tool-panel">
+        <div class="tool-title"><span>搜尋題庫</span><span style="color:var(--muted);font-size:.78rem">${totalQuestions} 題</span></div>
+        <div class="search-row">
+          <input class="search-input" id="search-input" placeholder="輸入關鍵字：Krashen、CLT、phoneme..." oninput="renderSearchResults()">
+          <button class="mini-btn" onclick="startSearchFromInput()">練搜尋結果</button>
+        </div>
+        <div class="search-results" id="search-results">
+          <div class="dash-note">輸入關鍵字後會列出相關題目，可以直接點單題，也可以把搜尋結果變成一組測驗。</div>
+        </div>
+      </div>
+      <div class="tool-panel">
+        <div class="tool-title"><span>錯題本</span><span style="color:var(--muted);font-size:.78rem">${wrongCount} 題</span></div>
+        <div class="dash-note">${wrongCount ? "依科目分類練習；答對會自動移除，也可手動標記已熟。" : "目前沒有錯題，先去練一輪吧。"}</div>
+        <div class="result-actions-inline">
+          ${wrongCount ? `<button class="mini-btn" onclick="startWrongReview()">練全部錯題</button><button class="mini-btn" onclick="if(confirm('確定清除所有錯題記錄？')){clearAllWrong();renderMenu();}">清除錯題</button>` : ""}
+        </div>
+        <div class="wrong-groups">
+          ${wrongBySubject.map(s => `<button class="wrong-chip" onclick="startWrongReview('${s.id}')">${s.name} · ${s.count} 題${s.maxWrong > 1 ? ` · 最多錯 ${s.maxWrong} 次` : ""}</button>`).join("")}
+        </div>
+        <div class="wrong-preview">
+          ${wrongList.slice(0, 5).map((w, i) => `
+            <div class="wrong-row">
+              <span><b>${w._subject}</b> · 錯 ${w.wrongCount || 1} 次<br>${w.q}</span>
+              <button class="mini-btn" onclick="markMasteredByMenuIndex(${i})">已熟</button>
+            </div>
+          `).join("")}
+        </div>
+      </div>
+    </div>
+
+    <div class="quick-grid">
+      <div class="subject-card" style="--accent:#e11d48" onclick="startComprehensive()">
+        <span class="emoji">🎯</span>
+        <h2>全科綜合測驗</h2>
+        <div class="en">All Subjects Mixed</div>
+        <div class="count">📝 隨機抽 50 題</div>
+      </div>
+      <div class="subject-card ${wrongCount === 0 ? 'disabled-card' : ''}" style="--accent:#dc7b00" onclick="${wrongCount > 0 ? 'startWrongReview()' : ''}">
+        <span class="emoji">🔁</span>
+        <h2>複習錯題</h2>
+        <div class="en">Wrong Question Review</div>
+        <div class="count">${wrongCount > 0 ? `❌ ${wrongCount} 題待複習` : '✅ 目前沒有錯題'}</div>
+        ${wrongCount > 0 ? `<div class="clear-record" onclick="event.stopPropagation();if(confirm('確定清除所有錯題記錄？')){clearAllWrong();renderMenu();}">🗑 清除記錄</div>` : ''}
+      </div>
+    </div>
+
+    <div class="section-label">Subject Practice</div>
+    <div class="subjects">
+      ${SUBJECTS.map(s => {
+        const qs = QUESTIONS[s.id] || [];
+        return `
+          <div class="subject-card" style="--accent:${s.color}" onclick="startQuiz('${s.id}')">
+            <span class="emoji">${s.emoji}</span>
+            <h2>${s.name}</h2>
+            <div class="en">${s.en}</div>
+            <div class="count">📝 ${qs.length} 題</div>
+          </div>
+        `;
+      }).join("")}
+    </div>
+  `;
+}
+
+function startQuiz(subjectId) {
+  isReviewMode = false;
+  isComprehensive = false;
+  isSearchMode = false;
+  currentSubject = SUBJECTS.find(s => s.id === subjectId);
+  questions = shuffle([...(QUESTIONS[subjectId] || [])].map(q => ({ ...q, _subject: currentSubject.name, _subjectId: currentSubject.id })));
+  resetSession();
+  renderQuestion();
+}
+
+function startComprehensive() {
+  isReviewMode = false;
+  isComprehensive = true;
+  isSearchMode = false;
+  currentSubject = { name: "全科綜合測驗", en: "All Subjects", emoji: "🎯", color: "#e11d48" };
+  const allQ = [];
+  SUBJECTS.forEach(s => {
+    const qs = QUESTIONS[s.id] || [];
+    const picked = shuffle([...qs]).slice(0, Math.ceil(50 / SUBJECTS.length) + 1);
+    picked.forEach(q => allQ.push({ ...q, _subject: s.name, _subjectId: s.id }));
+  });
+  questions = shuffle(allQ).slice(0, 50);
+  resetSession();
+  renderQuestion();
+}
+
+function resetSession() {
+  current = 0;
+  score = 0;
+  sessionWrong = [];
+  answerLog = [];
+  answered = false;
+  sessionSaved = false;
+  feedbackTiming = loadSettings().feedbackTiming || "immediate";
+}
+
+function restartCurrentSet() {
+  questions = shuffle([...questions]);
+  resetSession();
+  renderQuestion();
+}
+
+function startWrongReview(subjectId = null) {
+  const wrongList = activeWrong(subjectId);
+  if (!wrongList.length) return;
+  isReviewMode = true;
+  isComprehensive = false;
+  isSearchMode = false;
+  const subject = SUBJECTS.find(s => s.id === subjectId);
+  currentSubject = { name: subject ? `複習錯題：${subject.name}` : "複習錯題", en: "Wrong Question Review", emoji: "🔁", color: "#dc7b00" };
+  questions = shuffle([...wrongList]);
+  resetSession();
+  renderQuestion();
+}
+
+function renderSearchResults() {
+  const input = document.getElementById("search-input");
+  const box = document.getElementById("search-results");
+  if (!input || !box) return;
+  const query = input.value.trim().toLowerCase();
+  if (!query) {
+    box.innerHTML = `<div class="dash-note">輸入關鍵字後會列出相關題目，可以直接點單題，也可以把搜尋結果變成一組測驗。</div>`;
+    return;
+  }
+  const matches = SEARCH_INDEX.filter(item => `${item._subject} ${item.q} ${item.opts.join(" ")} ${item.exp}`.toLowerCase().includes(query));
+  box.innerHTML = matches.length ? matches.slice(0, 20).map(item => `
+    <div class="result-item" onclick="startSingleSearchQuestion('${item._index}')">
+      <strong>${item._subject}</strong>
+      <span>${item.q}</span>
+    </div>
+  `).join("") + (matches.length > 20 ? `<div class="dash-note">還有 ${matches.length - 20} 題，按「練搜尋結果」會全部加入。</div>` : "") : `<div class="dash-note">找不到相關題目，換個關鍵字試試。</div>`;
+}
+
+function getSearchMatches(query) {
+  const q = query.trim().toLowerCase();
+  if (!q) return [];
+  return SEARCH_INDEX.filter(item => `${item._subject} ${item.q} ${item.opts.join(" ")} ${item.exp}`.toLowerCase().includes(q));
+}
+
+function startSearchFromInput() {
+  const input = document.getElementById("search-input");
+  const query = input?.value || "";
+  const matches = getSearchMatches(query);
+  if (!matches.length) return;
+  isReviewMode = false;
+  isComprehensive = false;
+  isSearchMode = true;
+  currentSubject = { name: `搜尋：${query.trim()}`, en: "Search Practice", emoji: "🔎", color: "#2f6f73" };
+  questions = shuffle(matches.map(item => ({ ...item })));
+  resetSession();
+  renderQuestion();
+}
+
+function startSingleSearchQuestion(index) {
+  const item = SEARCH_INDEX.find(x => x._index === index);
+  if (!item) return;
+  isReviewMode = false;
+  isComprehensive = false;
+  isSearchMode = true;
+  currentSubject = { name: `單題搜尋：${item._subject}`, en: "Single Question", emoji: "🔎", color: "#2f6f73" };
+  questions = [{ ...item }];
+  resetSession();
+  renderQuestion();
+}
+
+function renderQuestion() {
+  document.body.classList.add("quiz-active");
+  const app = document.getElementById("app");
+  const q = questions[current];
+  const pct = Math.round((current / questions.length) * 100);
+
+  app.innerHTML = `
+    <div class="quiz-header">
+      <button class="back-btn" onclick="renderMenu()">← 返回選單</button>
+      <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
+      <div class="progress-text">
+        <span>${currentSubject.name}</span>
+        <span>${current + 1} / ${questions.length}</span>
+      </div>
+    </div>
+    <div class="question-card">
+      <div class="q-meta">第 ${current + 1} 題${(isComprehensive || isReviewMode) && q._subject ? ` · <span style="color:var(--primary)">${q._subject}</span>` : ''}</div>
+      <div class="q-text">${q.q}</div>
+      <div class="options" id="opts">
+        ${q.opts.map((opt, i) => `
+          <div class="option" id="opt-${i}" onclick="selectAnswer(${i})">
+            <span class="opt-label">${String.fromCharCode(65+i)}</span>
+            <span>${opt}</span>
+          </div>
+        `).join("")}
+      </div>
+      <div class="feedback" id="feedback"></div>
+      <button class="next-btn" id="next-btn" onclick="nextQuestion()">
+        ${current === questions.length - 1 ? "查看結果 →" : "下一題 →"}
+      </button>
+    </div>
+  `;
+}
+
+function selectAnswer(idx) {
+  if (answered) return;
+  answered = true;
+  const q = questions[current];
+  const correct = idx === q.ans;
+  const subjectId = q._subjectId || currentSubject.id || "mixed";
+  const subjectName = q._subject || currentSubject.name;
+  answerLog.push({ q, selected: idx, correct, subjectId, subjectName });
+
+  const opts = document.querySelectorAll(".option");
+  const fb = document.getElementById("feedback");
+  const nextBtn = document.getElementById("next-btn");
+
+  opts.forEach(o => { o.classList.add("disabled"); o.style.pointerEvents = "none"; });
+  if (feedbackTiming === "immediate" && opts[q.ans]) opts[q.ans].classList.add("show-correct");
+
+  if (correct) {
+    score++;
+    if (opts[idx]) opts[idx].classList.add("correct");
+    if (fb && feedbackTiming === "immediate") {
+      fb.className = "feedback correct-fb show";
+      fb.innerHTML = `<span class="feedback-icon">✅</span> 正確！${q.exp}`;
+    }
+    removeFromWrong(q);
+  } else {
+    if (opts[idx]) opts[idx].classList.add("wrong");
+    if (fb && feedbackTiming === "immediate") {
+      fb.className = "feedback wrong-fb show";
+      fb.innerHTML = `<span class="feedback-icon">❌</span> 答案是 <strong>${String.fromCharCode(65+q.ans)}</strong>。${q.exp}`;
+    }
+    addWrong(q, subjectName);
+    sessionWrong.push(q);
+  }
+  if (fb && feedbackTiming === "end") {
+    fb.className = "feedback correct-fb show";
+    fb.innerHTML = `<span class="feedback-icon">📝</span> 已作答。你選的是 <strong>${String.fromCharCode(65+idx)}</strong>，詳解會在結果頁一起顯示。`;
+  }
+
+  // 保底：一定要顯示下一題按鈕
+  if (nextBtn) {
+    nextBtn.classList.add("show");
+    nextBtn.style.display = "block";
+  }
+}
+
+function nextQuestion() {
+  current++;
+  answered = false;
+  if (current >= questions.length) {
+    renderResult();
+  } else {
+    renderQuestion();
+  }
+}
+
+function renderResult() {
+  document.body.classList.remove("quiz-active");
+  recordSessionStats();
+  const app = document.getElementById("app");
+  const pct = Math.round((score / questions.length) * 100);
+  let grade, emoji;
+  if (pct >= 90) { grade = "優秀！畢業考一定過！"; emoji = "🏆"; }
+  else if (pct >= 75) { grade = "很好，再複習一下弱項！"; emoji = "🎯"; }
+  else if (pct >= 60) { grade = "及格了，繼續加油！"; emoji = "💪"; }
+  else { grade = "需要多加複習，你可以的！"; emoji = "📖"; }
+
+  const totalWrong = loadWrong().length;
+  const retryBtn = isReviewMode
+    ? `<button class="btn-retry" onclick="startWrongReview()">🔄 再練錯題</button>`
+    : isComprehensive
+      ? `<button class="btn-retry" onclick="startComprehensive()">🔄 再來一輪</button>`
+      : isSearchMode
+        ? `<button class="btn-retry" onclick="restartCurrentSet()">🔄 再練這組</button>`
+        : `<button class="btn-retry" onclick="startQuiz(currentSubject.id)">🔄 再練一次</button>`;
+
+  const wrongBanner = sessionWrong.length > 0 ? `
+    <div style="margin:16px 0;padding:12px 16px;background:#fff7ed;border:1px solid #fed7aa;border-radius:10px;font-size:0.88rem;color:#92400e">
+      ❌ 本次答錯 <strong>${sessionWrong.length}</strong> 題，已自動加入錯題本（共 ${totalWrong} 題）
+    </div>` : isReviewMode && sessionWrong.length === 0 ? `
+    <div style="margin:16px 0;padding:12px 16px;background:#ecfdf5;border:1px solid #6ee7b7;border-radius:10px;font-size:0.88rem;color:#065f46">
+      🎉 錯題全部答對！已從錯題本移除。
+    </div>` : '';
+  const endReview = feedbackTiming === "end" ? `
+    <div class="review-strip">
+      ${answerLog.map((item, i) => `
+        <div class="review-card ${item.correct ? 'correct-review' : 'wrong-review'}">
+          <span class="tag">${item.subjectName || currentSubject.name} · 第 ${i + 1} 題 · ${item.correct ? '答對' : '答錯'}</span>
+          <div><strong>題目：</strong>${item.q.q}</div>
+          <div><strong>你的答案：</strong>${String.fromCharCode(65 + item.selected)}. ${item.q.opts[item.selected]}</div>
+          <div><strong>正確答案：</strong>${String.fromCharCode(65 + item.q.ans)}. ${item.q.opts[item.q.ans]}</div>
+          <div><strong>詳解：</strong>${item.q.exp}</div>
+          ${!item.correct ? `<button class="mini-btn" style="margin-top:8px" onclick="markMastered('${item.q.q.replace(/'/g, "\\'")}')">標記已熟</button>` : ""}
+        </div>
+      `).join("")}
+    </div>
+  ` : "";
+
+  app.innerHTML = `
+    <div class="quiz-header">
+      <button class="back-btn" onclick="renderMenu()">← 返回選單</button>
+    </div>
+    <div class="result-card">
+      <div style="font-size:3rem;margin-bottom:12px">${emoji}</div>
+      <div class="result-score">${pct}%</div>
+      <div class="result-label">${score} / ${questions.length} 題答對</div>
+      <div class="result-grade">${grade}</div>
+      ${wrongBanner}
+      ${endReview}
+      <div class="result-actions">
+        ${retryBtn}
+        ${activeWrong().length > 0 && !isReviewMode ? `<button class="btn-menu" style="border-color:#dc7b00;color:#dc7b00" onclick="startWrongReview()">🔁 複習錯題（${activeWrong().length}）</button>` : ''}
+        <button class="btn-menu" onclick="renderMenu()">🏠 選擇科目</button>
+      </div>
+    </div>
+  `;
+}
+
+function shuffle(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+// Init
+saveSettings(loadSettings());
+renderMenu();
+if ("serviceWorker" in navigator && location.protocol !== "file:") {
+  navigator.serviceWorker.register("./sw.js").catch(() => {});
+}
+</script>
+</body>
+</html>
