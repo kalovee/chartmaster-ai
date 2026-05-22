@@ -1,0 +1,18 @@
+{
+  "name": "英語教育系畢業考互動測驗",
+  "short_name": "畢業考測驗",
+  "description": "支援手機、錯題本、搜尋題庫、統計儀表板與離線使用的畢業考互動測驗。",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#fffdf8",
+  "theme_color": "#2f6f73",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
