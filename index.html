@@ -936,8 +936,6 @@ function hardenQuestion(raw, subjectId, subjectName, idx = 0) {
     text: polishOption(text),
     correct: optionIdx === raw.ans,
   }));
-  const extra = chooseExtraDistractor(raw, subjectId, optionObjects.map(o => o.text));
-  if (extra) optionObjects.push({ text: extra, correct: false });
   const shuffled = seededShuffle(optionObjects, hashText(`${subjectId}:${idx}:${raw.q}`));
   return {
     ...raw,
