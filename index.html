@@ -806,6 +806,149 @@ british_lit: [
 ],
 };
 
+// ── Harder Options / Misleading Distractors ──
+const OPTION_POLISH = {
+  "海洋與地震": "海洋、水域、風暴、地震與馬",
+  "智慧與工藝": "智慧、工藝、理性戰爭策略與城市守護",
+  "愛情與美麗": "愛情、愉悅、美麗、慾望與生育",
+  "收穫與農業": "收穫、農業、自然循環與四季",
+  "戰爭與暴力": "戰爭、流血、暴力衝突與男子氣概",
+  "火焰與鍛造": "火焰、鍛造、工藝、發明與火山",
+  "信使與旅行": "信使、旅行、商業、溝通與邊界",
+  "狩獵與月亮": "狩獵、荒野、月亮、弓箭與分娩",
+  "婚姻、分娩與家庭": "婚姻、女性、分娩、家庭與王權秩序",
+  "嫉妒": "嫉妒（jealousy）與被操縱的猜疑",
+  "傲慢": "傲慢（hubris）與權力幻覺",
+  "過度的野心": "過度野心（vaulting ambition）",
+  "猶豫不決（indecision）": "猶豫不決（indecision）與延宕行動",
+  "意識流內心獨白": "意識流內心獨白與主觀時間",
+  "哥德恐怖元素": "哥德恐怖元素與超自然氣氛",
+  "工業革命的負面影響": "工業化造成的階級壓迫與人性疏離",
+};
+
+const EXTRA_DISTRACTORS = {
+  phonetics: [
+    "以拼字規則判斷語音差異，而非實際發音環境",
+    "兩個音在相同語境可互換，但只造成口音差異",
+    "由聽者感知造成的音變，不涉及發音器官位置",
+    "同一拼字在不同詞中對應不同音值的現象",
+    "只描述重音與語調，不處理音位或同位音關係",
+  ],
+  linguistics: [
+    "由語境推論產生的語用意義，而非句法結構本身",
+    "詞彙意義相近但真值條件不一定完全相同的關係",
+    "只改變語氣或語域，不改變詞類與句法功能",
+    "把語言使用規範化，優先判斷正誤而非描述實際用法",
+    "依靠世界知識成立，但不屬於句子邏輯必然結果",
+  ],
+  sla: [
+    "大量重複操練後形成自動化，但不一定產生習得",
+    "輸入量增加即可習得，較少強調注意或互動修正",
+    "學習者先用母語規則套用，再逐步修正為目標語形式",
+    "焦點放在明確文法教學，而不是自然溝通中的語言發展",
+    "把錯誤視為習慣未改正，而非發展中語言系統的證據",
+  ],
+  methods: [
+    "以正確形式操練為主，溝通任務只是最後的應用活動",
+    "強調教師控制輸入，降低學生自由協商意義的時間",
+    "用真實情境包裝語法點，但核心仍是句型替換練習",
+    "先呈現規則再做控制式練習，最後才開放產出",
+    "主要評估語言形式準確度，而非任務完成或互動成效",
+  ],
+  materials: [
+    "活動看似溝通導向，但答案預設且缺少資訊落差",
+    "教材順序依語法難度排列，情境只是例句背景",
+    "任務要求學生交換資訊，但結果不影響後續決策",
+    "把真實文本簡化到只剩目標句型，降低語境線索",
+    "以教師講解取代學生探索，較少提供自主練習路徑",
+  ],
+  assessment: [
+    "題目容易計分，但未必能代表真實語言使用能力",
+    "測驗內容與教學目標相似，卻缺少清楚評分規準",
+    "分數穩定度高，但題型過窄導致效度可能不足",
+    "以單次紙筆測驗推論長期能力，忽略表現情境差異",
+    "評量結果可比較排名，但較難提供具體學習回饋",
+  ],
+  curriculum: [
+    "以語言形式為主線，功能與情境只作為單元例子",
+    "從需求分析出發，但最後仍以教科書章節作為排序",
+    "課程目標看似溝通導向，實際評量仍偏重文法辨識",
+    "以主題整合技能，卻沒有明確說明微觀語言焦點",
+    "把學習者興趣納入內容，但未處理程度銜接問題",
+  ],
+  western_lit: [
+    "掌管邊界、旅行、商業與亡靈引導的神祇",
+    "掌管智慧、工藝、城市守護與理性戰爭策略的女神",
+    "掌管農業、四季、收穫與自然循環的女神",
+    "掌管火焰、鍛造、工藝、發明與火山的神祇",
+    "掌管狩獵、荒野、月亮、弓箭與分娩的女神",
+  ],
+  british_lit: [
+    "以社會諷刺包裝道德批判，重點在階級與制度荒謬",
+    "以碎片化敘事呈現現代文明崩壞與精神荒原",
+    "以自然、記憶與個人情感回應理性時代的限制",
+    "以寓言結構呈現宗教或政治美德，而非寫實社會描繪",
+    "以機智、悖論和語言遊戲諷刺上層社會的虛偽",
+  ],
+};
+
+function hashText(text) {
+  let hash = 2166136261;
+  for (let i = 0; i < text.length; i++) {
+    hash ^= text.charCodeAt(i);
+    hash = Math.imul(hash, 16777619);
+  }
+  return hash >>> 0;
+}
+
+function seededShuffle(items, seed) {
+  const arr = [...items];
+  let state = seed || 1;
+  for (let i = arr.length - 1; i > 0; i--) {
+    state = (Math.imul(state, 1664525) + 1013904223) >>> 0;
+    const j = state % (i + 1);
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function polishOption(text) {
+  return OPTION_POLISH[text] || text;
+}
+
+function chooseExtraDistractor(q, subjectId, existing) {
+  const pool = EXTRA_DISTRACTORS[subjectId] || [];
+  if (!pool.length) return "";
+  const used = new Set(existing.map(x => x.replace(/\s+/g, "")));
+  const start = hashText(`${subjectId}:${q.q}`) % pool.length;
+  for (let offset = 0; offset < pool.length; offset++) {
+    const candidate = pool[(start + offset) % pool.length];
+    const key = candidate.replace(/\s+/g, "");
+    const duplicate = [...used].some(item => item.includes(key) || key.includes(item));
+    if (!duplicate) return candidate;
+  }
+  return "";
+}
+
+function hardenQuestion(raw, subjectId, subjectName, idx = 0) {
+  if (raw._hardened) return { ...raw };
+  const optionObjects = raw.opts.map((text, optionIdx) => ({
+    text: polishOption(text),
+    correct: optionIdx === raw.ans,
+  }));
+  const extra = chooseExtraDistractor(raw, subjectId, optionObjects.map(o => o.text));
+  if (extra) optionObjects.push({ text: extra, correct: false });
+  const shuffled = seededShuffle(optionObjects, hashText(`${subjectId}:${idx}:${raw.q}`));
+  return {
+    ...raw,
+    opts: shuffled.map(o => o.text),
+    ans: shuffled.findIndex(o => o.correct),
+    _subject: subjectName,
+    _subjectId: subjectId,
+    _hardened: true,
+  };
+}
+
 // ── App State ──
 let currentSubject = null;
 let questions = [];
@@ -824,9 +967,7 @@ const STATS_KEY = "quizStatsV2";
 
 // ── Index / Settings / Stats ──
 const SEARCH_INDEX = SUBJECTS.flatMap(s => (QUESTIONS[s.id] || []).map((q, idx) => ({
-  ...q,
-  _subject: s.name,
-  _subjectId: s.id,
+  ...hardenQuestion(q, s.id, s.name, idx),
   _index: `${s.id}-${idx}`,
 })));
 
@@ -918,8 +1059,11 @@ function loadWrong() {
     if (raw) {
       const parsed = JSON.parse(raw).map(item => {
         const subject = SUBJECTS.find(s => s.id === item._subjectId) || subjectByName(item._subject);
+        const sourceList = subject ? (QUESTIONS[subject.id] || []) : [];
+        const sourceIdx = sourceList.findIndex(q => q.q === item.q);
+        const hardened = sourceIdx >= 0 ? hardenQuestion(sourceList[sourceIdx], subject.id, subject.name, sourceIdx) : item;
         return {
-          ...item,
+          ...hardened,
           _subject: item._subject || subject?.name || "未分類",
           _subjectId: item._subjectId || subject?.id || "unknown",
           wrongCount: item.wrongCount || 1,
@@ -1107,7 +1251,7 @@ function startQuiz(subjectId) {
   isComprehensive = false;
   isSearchMode = false;
   currentSubject = SUBJECTS.find(s => s.id === subjectId);
-  questions = shuffle([...(QUESTIONS[subjectId] || [])].map(q => ({ ...q, _subject: currentSubject.name, _subjectId: currentSubject.id })));
+  questions = shuffle([...(QUESTIONS[subjectId] || [])].map((q, idx) => hardenQuestion(q, currentSubject.id, currentSubject.name, idx)));
   resetSession();
   renderQuestion();
 }
@@ -1121,7 +1265,10 @@ function startComprehensive() {
   SUBJECTS.forEach(s => {
     const qs = QUESTIONS[s.id] || [];
     const picked = shuffle([...qs]).slice(0, Math.ceil(50 / SUBJECTS.length) + 1);
-    picked.forEach(q => allQ.push({ ...q, _subject: s.name, _subjectId: s.id }));
+    picked.forEach(q => {
+      const originalIdx = qs.indexOf(q);
+      allQ.push(hardenQuestion(q, s.id, s.name, originalIdx));
+    });
   });
   questions = shuffle(allQ).slice(0, 50);
   resetSession();
